@@ -37,17 +37,25 @@ export function BrandDashboard() {
   const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
   const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
   const campaignImages: FeaturedCampaign[] = [
-    { name: 'Internship Campaign', src: '/assets/campaign-internship.png', budget: 150000, target: 300, weeks: 8, goal: 'Attract qualified internship applicants through creator-led workplace stories.' },
-    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg', budget: 90000, target: 180, weeks: 6, goal: 'Build awareness through playful, community-native creator content.' },
-    { name: 'Assessmate', src: '/assets/campaign-assessmate.png', budget: 120000, target: 150, weeks: 5, goal: 'Introduce Assessmate to students and early-career professionals.' },
-    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png', budget: 180000, target: 220, weeks: 10, goal: 'Reach households through trusted community recommendations.' },
+    { name: 'Solutions Job Fair', src: '/assets/campaign-solutions-job-fair.png', budget: 150000, target: 300, weeks: 8, goal: 'Drive qualified applicants to the Solutions Job Fair through creator-led career content.' },
+    { name: 'Field Rider Cebu', src: '/assets/campaign-field-rider-cebu.png', budget: 90000, target: 180, weeks: 6, goal: 'Recruit field riders in Cebu through trusted local creator communities.' },
+    { name: 'PITX Onsite Job Fair', src: '/assets/campaign-pitx-job-fair.png', budget: 120000, target: 150, weeks: 5, goal: 'Generate awareness and registrations for the PITX onsite recruitment event.' },
+    { name: 'Makati Hiring', src: '/assets/campaign-makati-hiring.png', budget: 80000, target: 120, weeks: 4, goal: 'Reach call center candidates near Makati through location-relevant creator content.' },
+    { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations.' },
+    { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, goal: 'Invite technology professionals and creators to KCP Networking Night.' },
+  ]
+  const communityImages = [
+    { name: 'Madrid Performers', src: '/assets/campaign-internship.png' },
+    { name: 'Field Riders', src: '/assets/campaign-tiko.jpeg' },
+    { name: 'Assessmate Mentors', src: '/assets/campaign-assessmate.png' },
+    { name: 'Gasul Community', src: '/assets/campaign-petron-gasul.png' },
   ]
   const creatorImages = ['/assets/madrid-performer-1.jpeg', '/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
   const featuredCommunities = [
-    { name: 'Madrid Performers', logo: campaignImages[0].src, members: creatorImages.slice(0, 2) },
-    { name: 'Field Riders', logo: campaignImages[1].src, members: creatorImages.slice(2, 4) },
-    { name: 'Assessmate Mentors', logo: campaignImages[2].src, members: [creatorImages[1], creatorImages[3]] },
-    { name: 'Gasul Community', logo: campaignImages[3].src, members: [creatorImages[0], creatorImages[2]] },
+    { name: communityImages[0].name, logo: communityImages[0].src, members: creatorImages.slice(0, 2) },
+    { name: communityImages[1].name, logo: communityImages[1].src, members: creatorImages.slice(2, 4) },
+    { name: communityImages[2].name, logo: communityImages[2].src, members: [creatorImages[1], creatorImages[3]] },
+    { name: communityImages[3].name, logo: communityImages[3].src, members: [creatorImages[0], creatorImages[2]] },
   ]
 
   useEffect(() => {
@@ -94,7 +102,7 @@ export function BrandDashboard() {
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
         <div className="metric-top"><span>Activated communities</span><i><Layers3 size={18} /></i></div>
         <div className="community-directory-preview">
-          <span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span>
+          <span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{communityImages.map((community) => <i key={community.name} title={community.name}><img src={community.src} alt="" /></i>)}</span>
           <span>View communities <ArrowRight size={15} /></span>
         </div>
       </button>
