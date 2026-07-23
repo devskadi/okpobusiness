@@ -885,6 +885,8 @@ td > strong { color: var(--ink); }
   .brand-kpi-grid .community-directory-card .metric-top { width: 100%; }
   .dashboard-analytics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-analytics-grid .metric-card { min-height: 82px; padding: 12px 14px; }
+  .dashboard-analytics-grid .metric-top > span { display: none; }
+  .brand-kpi-grid .dashboard-analytics-grid .metric-card:not(.gpv-primary) .metric-top > i { display: grid; }
   .community-directory-preview > span:last-child { font-size: 0; }
   .community-directory-preview > span:last-child svg { width: 18px; height: 18px; }
   .community-directory-list article { grid-template-columns: auto minmax(0, 1fr); }

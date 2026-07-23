@@ -25,6 +25,7 @@ type FeaturedCampaign = {
   budget: number
   target: number
   weeks: number
+  currentWeek: number
   goal: string
 }
 
@@ -127,12 +128,12 @@ export function BrandDashboard() {
   const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
   const liquidityShowcase = useShowcaseLiquidity(liquidity)
   const campaignImages: FeaturedCampaign[] = [
-    { name: 'Solutions Job Fair', src: '/assets/campaign-solutions-job-fair.png', budget: 150000, target: 300, weeks: 8, goal: 'Drive qualified applicants to the Solutions Job Fair through creator-led career content. Prioritize practical application guidance, local event awareness, and clear calls to register or attend.' },
-    { name: 'Field Rider Cebu', src: '/assets/campaign-field-rider-cebu.png', budget: 90000, target: 180, weeks: 6, goal: 'Recruit field riders in Cebu through trusted local creator communities. Content should make the role feel accessible, explain where and when to apply, and encourage qualified candidates to register for the onsite job fair.' },
-    { name: 'PITX Onsite Job Fair', src: '/assets/campaign-pitx-job-fair.png', budget: 120000, target: 150, weeks: 5, goal: 'Generate awareness and registrations for the PITX onsite recruitment event. Use relatable creator stories to clarify the available role, event schedule, location, and next step for interested applicants.' },
-    { name: 'Makati Hiring', src: '/assets/campaign-makati-hiring.png', budget: 80000, target: 120, weeks: 4, goal: 'Reach call center candidates near Makati through location-relevant creator content. Emphasize Tagalog account opportunities, the accessible onsite process, and a direct invitation to register before the event.' },
-    { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations. Show the use case in a simple, credible way and guide viewers toward the intended action without making financial guarantees.' },
-    { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, goal: 'Invite technology professionals and creators to KCP Networking Night. Position the event as a focused opportunity to meet peers, exchange ideas, and build useful professional connections.' },
+    { name: 'Solutions Job Fair', src: '/assets/campaign-solutions-job-fair.png', budget: 150000, target: 300, weeks: 8, currentWeek: 5, goal: 'Drive qualified applicants to the Solutions Job Fair through creator-led career content. Prioritize practical application guidance, local event awareness, and clear calls to register or attend.' },
+    { name: 'Field Rider Cebu', src: '/assets/campaign-field-rider-cebu.png', budget: 90000, target: 180, weeks: 6, currentWeek: 3, goal: 'Recruit field riders in Cebu through trusted local creator communities. Content should make the role feel accessible, explain where and when to apply, and encourage qualified candidates to register for the onsite job fair.' },
+    { name: 'PITX Onsite Job Fair', src: '/assets/campaign-pitx-job-fair.png', budget: 120000, target: 150, weeks: 5, currentWeek: 2, goal: 'Generate awareness and registrations for the PITX onsite recruitment event. Use relatable creator stories to clarify the available role, event schedule, location, and next step for interested applicants.' },
+    { name: 'Makati Hiring', src: '/assets/campaign-makati-hiring.png', budget: 80000, target: 120, weeks: 4, currentWeek: 2, goal: 'Reach call center candidates near Makati through location-relevant creator content. Emphasize Tagalog account opportunities, the accessible onsite process, and a direct invitation to register before the event.' },
+    { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, currentWeek: 6, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations. Show the use case in a simple, credible way and guide viewers toward the intended action without making financial guarantees.' },
+    { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, currentWeek: 1, goal: 'Invite technology professionals and creators to KCP Networking Night. Position the event as a focused opportunity to meet peers, exchange ideas, and build useful professional connections.' },
   ]
   const communityImages = [
     { name: 'Madrid Performers', src: '/assets/campaign-internship.png' },
@@ -172,8 +173,7 @@ export function BrandDashboard() {
           <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
         </div>
       </article>
-      <section className="dashboard-analytics" aria-labelledby="dashboard-analytics-title">
-        <div className="dashboard-section-heading"><span className="eyebrow" id="dashboard-analytics-title">CAMPAIGN ANALYTICS</span></div>
+      <section className="dashboard-analytics" aria-label="Analytics">
         <div className="metrics-grid metrics-grid-four dashboard-analytics-grid">
           <MetricCard label="Impressions" value="6.8M" icon={Eye} />
           <MetricCard label="Clicks" value="184.2K" icon={MousePointerClick} />
@@ -193,7 +193,7 @@ export function BrandDashboard() {
       <div className="modal-card campaign-details-modal">
         <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>
         <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p className={goalExpanded ? 'is-expanded' : ''}>{selectedCampaign.goal}</p>{selectedCampaign.goal.length > 140 ? <button className="campaign-goal-toggle" onClick={() => setGoalExpanded((expanded) => !expanded)}>{goalExpanded ? 'See less' : 'See more'}</button> : null}</div></div>
-        <dl className="campaign-details-metrics"><div><dt>Spent</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))}</dd></div><div><dt>Published</dt><dd>{Math.round(selectedCampaign.target * .62)}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
+        <dl className="campaign-details-metrics"><div><dt>Spent</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))} <span>/ {formatCurrency(selectedCampaign.budget)}</span></dd></div><div><dt>Published</dt><dd>{Math.round(selectedCampaign.target * .62)} <span>/ {selectedCampaign.target}</span></dd></div><div><dt>Duration</dt><dd>{selectedCampaign.currentWeek} <span>/ {selectedCampaign.weeks} weeks</span></dd></div></dl>
         <section className="campaign-details-creators"><div><span className="eyebrow">PARTICIPATING CREATORS</span><p>54 creators across 4 activated communities</p></div><div className="campaign-creator-stack">{creatorImages.map((src, index) => <img src={src} alt="" title={['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]} key={src} />)}<span>+50</span></div></section>
         <section className="campaign-top-content"><span className="eyebrow">TOP CONTENT</span><div aria-label="Top campaign content">{Array.from({ length: 10 }, (_, index) => { const available = campaignImages.filter((campaign) => campaign.name !== selectedCampaign.name); const campaign = available[index % available.length]; return <article key={`${campaign.name}-${index}`}><img src={campaign.src} alt="" /><span>{[48.2, 36.7, 29.4, 26.8, 24.1, 21.7, 19.9, 18.4, 16.8, 15.3][index]}K views</span></article> })}</div></section>
       </div>
