@@ -67,7 +67,6 @@ export function BrandDashboard() {
         {campaignImages.map((campaign) => <article className="featured-campaign-card" key={campaign.name}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
           <div className="featured-campaign-body">
-            <div><span className="eyebrow">FEATURED CAMPAIGN</span><span className="status-badge status-live"><i />Live</span></div>
             <h2>{campaign.name}</h2>
             <p>Madrid Philippines</p>
             <div className="featured-campaign-progress"><strong>{campaign.progress}%</strong><span>delivered</span></div>
