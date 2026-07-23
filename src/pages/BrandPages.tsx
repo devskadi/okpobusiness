@@ -76,7 +76,7 @@ export function BrandDashboard() {
   }, [])
 
   return <div className="page-stack">
-    <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New opportunity</span></Link>
+    <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New campaign</span></Link>
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
       <div className="featured-campaign-carousel" ref={featuredCarouselRef} data-autoplay="3000">
@@ -118,8 +118,9 @@ export function BrandDashboard() {
       <div className="modal-card campaign-details-modal">
         <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>
         <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p>{selectedCampaign.goal}</p></div></div>
-        <dl className="campaign-details-metrics"><div><dt>Allocated budget</dt><dd>{formatCurrency(selectedCampaign.budget)}</dd></div><div><dt>Content target</dt><dd>{selectedCampaign.target}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
-        <section className="campaign-details-creators"><span className="eyebrow">CREATORS</span><div>{creatorImages.map((src, index) => <span key={src}><img src={src} alt="" /><strong>{['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]}</strong></span>)}</div></section>
+        <dl className="campaign-details-metrics"><div><dt>Spent / allocated</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))} <span>/ {formatCurrency(selectedCampaign.budget)}</span></dd></div><div><dt>Content target</dt><dd>{selectedCampaign.target}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
+        <section className="campaign-details-creators"><span className="eyebrow">CREATORS</span><div className="campaign-creator-stack">{creatorImages.map((src, index) => <img src={src} alt="" title={['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]} key={src} />)}<span>+50</span></div></section>
+        <section className="campaign-top-content"><span className="eyebrow">TOP CONTENT</span><div>{campaignImages.filter((campaign) => campaign.name !== selectedCampaign.name).slice(0, 3).map((campaign, index) => <article key={campaign.name}><img src={campaign.src} alt="" /><span>{[48.2, 36.7, 29.4][index]}K views</span></article>)}</div></section>
       </div>
     </div> : null}
     {communitiesOpen ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="community-directory-title">

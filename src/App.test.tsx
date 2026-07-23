@@ -38,8 +38,9 @@ describe('OkPo role workspaces', () => {
     await user.click(screen.getByRole('button', { name: /Solutions Job Fair/i }))
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Solutions Job Fair' })).toBeInTheDocument()
-    expect(within(dialog).getByText('Allocated budget')).toBeInTheDocument()
-    expect(within(dialog).getByText('Maya Reyes')).toBeInTheDocument()
+    expect(within(dialog).getByText('Spent / allocated')).toBeInTheDocument()
+    expect(within(dialog).getByText('+50')).toBeInTheDocument()
+    expect(within(dialog).getByText('TOP CONTENT')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {
