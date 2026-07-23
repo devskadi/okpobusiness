@@ -32,29 +32,32 @@ export function BrandDashboard() {
     { name: 'Assessmate', src: '/assets/campaign-assessmate.png' },
     { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png' },
   ]
-  const communityImages = ['/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
+  const creatorImages = ['/assets/madrid-performer-1.jpeg', '/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
 
   return <div className="page-stack">
     <PageHeader eyebrow="MADRID PHILIPPINES" title="Good morning, Alexis" description="Here’s how your community campaigns are performing." />
     <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New opportunity</span></Link>
+    <section className="featured-campaigns">
+      <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
+      <div className="featured-campaign-carousel">
+        {campaignImages.map((campaign) => <article className="featured-campaign-card" key={campaign.name}>
+          <img src={campaign.src} alt="" />
+          <div><span>Madrid Philippines</span><h2>{campaign.name}</h2></div>
+        </article>)}
+      </div>
+    </section>
     <section className="metrics-grid brand-kpi-grid">
-      <MetricCard label="Gross Pool Value" value={formatCurrency(grossPoolValue)} detail={`${postedOpportunities.length} posted opportunities`} icon={WalletCards} className="gpv-primary finance-primary" />
-      <MetricCard label="Liquidity" value={formatCurrency(liquidity)} detail={`${grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed`} icon={WalletCards} className="finance-primary liquidity-primary" />
+      <article className="metric-card pool-card finance-primary gpv-primary">
+        <div className="metric-top"><span>Pool</span><i><WalletCards size={18} /></i></div>
+        <div className="pool-card-values">
+          <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong><small>{postedOpportunities.length} posted opportunities</small></div>
+          <div><span>Liquidity</span><strong>{formatCurrency(liquidity)}</strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
+        </div>
+      </article>
       <MetricCard label="Views" value={formatNumber(views)} detail="Across published campaign content" icon={Eye} />
       <MetricCard label="Engagement" value={formatNumber(engagement)} detail="Interactions across campaign content" icon={BarChart3} />
-      <MetricCard label="Active campaigns" value={campaignImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span></span>} icon={Layers3} className="dashboard-activity-card" />
-      <MetricCard label="Active communities" value={2} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack">{communityImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span></span>} icon={Users} className="dashboard-activity-card" />
-    </section>
-    <section className="madrid-campaign-card">
-      <div>
-        <span className="eyebrow">ACTIVE CAMPAIGN</span>
-        <h2>Internship Campaign</h2>
-        <p>Madrid Philippines</p>
-      </div>
-      <div className="madrid-community-list">
-        <span><span className="mini-photo-stack"><img src="/assets/madrid-performer-1.jpeg" alt="" /><img src="/assets/madrid-performer-2.jpeg" alt="" /></span><strong>Madrid Performers</strong></span>
-        <span><span className="mini-photo-stack"><img src="/assets/madrid-rider-1.jpeg" alt="" /><img src="/assets/madrid-rider-2.jpeg" alt="" /></span><strong>Field Riders</strong></span>
-      </div>
+      <MetricCard label="Active communities" value={campaignImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span></span>} icon={Layers3} className="dashboard-activity-card" />
+      <MetricCard label="Active creators" value={creatorImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack">{creatorImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span></span>} icon={Users} className="dashboard-activity-card" />
     </section>
   </div>
 }

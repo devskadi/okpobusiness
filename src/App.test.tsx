@@ -19,10 +19,10 @@ describe('OkPo role workspaces', () => {
     expect(screen.getByText('Engagement')).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
-    expect(screen.getByText('Active campaigns')).toBeInTheDocument()
+    expect(screen.getByText('Active creators')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Internship Campaign' })).toBeInTheDocument()
     expect(screen.getByText('Active communities')).toBeInTheDocument()
-    expect(screen.getByText('Madrid Performers')).toBeInTheDocument()
+    expect(screen.getByText('FEATURED CAMPAIGNS')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {
