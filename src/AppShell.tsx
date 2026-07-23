@@ -70,7 +70,7 @@ export function AppShell() {
       <div className="sidebar-brand"><Logo /><button className="mobile-only icon-button" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={18} /></button></div>
       <div className="role-switcher-wrap">
         <button className="role-switcher" onClick={() => setRoleOpen((value) => !value)} aria-expanded={roleOpen}>
-          <Avatar initials={meta.initials} size="sm" tone={activeRole === 'brand' ? 'yellow' : activeRole === 'leader' ? 'mint' : 'cream'} />
+          <Avatar initials={meta.initials} size="sm" src="/assets/user-portrait.png" tone={activeRole === 'brand' ? 'yellow' : activeRole === 'leader' ? 'mint' : 'cream'} />
           <span><small>Viewing as</small><strong>{meta.label}</strong></span><ChevronDown size={15} />
         </button>
         {roleOpen ? <div className="role-menu">
@@ -87,14 +87,14 @@ export function AppShell() {
       </div>
       <div className="sidebar-bottom">
         <button className="reset-button" onClick={() => dispatch({ type: 'RESET_DEMO' })}><RotateCcw size={15} />Reset demo data</button>
-        <div className="sidebar-user"><Avatar initials={meta.initials} size="sm" tone="black" /><span><strong>{meta.name}</strong><small>{meta.description}</small></span></div>
+        <div className="sidebar-user"><Avatar initials={meta.initials} size="sm" src="/assets/user-portrait.png" tone="black" /><span><strong>{meta.name}</strong><small>{meta.description}</small></span></div>
       </div>
     </aside>
     {menuOpen ? <button className="sidebar-scrim" onClick={() => setMenuOpen(false)} aria-label="Close menu" /> : null}
     <div className="main-shell">
       <header className="topbar">
         <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-        <div className="topbar-context"><span>OkPo</span><i /><strong>{meta.label}</strong></div>
+        <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>
         <div className="topbar-actions">
           <span className="environment-pill">Leadership prototype</span>
           <button className="icon-button notification-button" aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}><Bell size={18} />{notices.some((item) => !item.read) ? <i /> : null}</button>

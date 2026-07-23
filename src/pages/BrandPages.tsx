@@ -80,7 +80,7 @@ export function BrandProducts() {
   return <div className="page-stack">
     <PageHeader eyebrow="PRODUCTS" title="Products" description="Reusable details for every opportunity." actions={<button className="button button-primary" onClick={() => setEditing(blank())}><Plus size={16} />Add product</button>} />
     <div className="product-grid">{state.products.map((product) => <article className="product-card" key={product.id}><div className="product-art"><span>DR</span><Package size={34} /></div><div className="product-card-body"><div><span className="overline">{product.category}</span><h2>{product.name}</h2></div><p>{product.description}</p><div className="tag-row">{product.keyBenefits.slice(0, 3).map((item) => <span key={item}>{item}</span>)}</div><footer><span className="status-badge status-active"><i />Active</span><button className="button button-secondary button-small" onClick={() => setEditing(product)}><Pencil size={14} />Edit</button></footer></div></article>)}</div>
-    {editing ? <div className="modal-backdrop"><form className="modal-card form-modal" onSubmit={save}><header><div><span className="eyebrow">PRODUCT</span><h2>{state.products.some((item) => item.id === editing.id) ? 'Edit product' : 'Add product'}</h2></div><button type="button" className="icon-button" onClick={() => setEditing(null)}>×</button></header><div className="form-grid form-grid-two"><label className="field full"><span>Product name</span><input autoFocus value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label><label className="field"><span>Category</span><input value={editing.category} onChange={(event) => setEditing({ ...editing, category: event.target.value })} /></label><label className="field full"><span>Description</span><textarea rows={3} value={editing.description} onChange={(event) => setEditing({ ...editing, description: event.target.value })} /></label><label className="field full"><span>Key benefits</span><input value={editing.keyBenefits.join(', ')} onChange={(event) => setEditing({ ...editing, keyBenefits: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /><small>Separate with commas.</small></label></div><footer><button type="button" className="button button-secondary" onClick={() => setEditing(null)}>Cancel</button><button className="button button-primary">Save product</button></footer></form></div> : null}
+    {editing ? <div className="modal-backdrop"><form className="modal-card form-modal" onSubmit={save}><header><div><span className="eyebrow">PRODUCT</span><h2>{state.products.some((item) => item.id === editing.id) ? 'Edit product' : 'Add product'}</h2></div><button type="button" className="icon-button" onClick={() => setEditing(null)}>×</button></header><div className="form-grid form-grid-two"><label className="field full"><span>Product name</span><input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label><label className="field"><span>Category</span><input value={editing.category} onChange={(event) => setEditing({ ...editing, category: event.target.value })} /></label><label className="field full"><span>Description</span><textarea rows={3} value={editing.description} onChange={(event) => setEditing({ ...editing, description: event.target.value })} /></label><label className="field full"><span>Key benefits</span><input value={editing.keyBenefits.join(', ')} onChange={(event) => setEditing({ ...editing, keyBenefits: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /><small>Separate with commas.</small></label></div><footer><button type="button" className="button button-secondary" onClick={() => setEditing(null)}>Cancel</button><button className="button button-primary">Save product</button></footer></form></div> : null}
   </div>
 }
 
@@ -115,7 +115,7 @@ export function BrandNewOpportunity() {
     <header className="wizard-top"><Link to="/brand/opportunities"><ArrowLeft size={16} />Opportunities</Link><div><span>New opportunity</span><strong>{draft.name || 'Untitled opportunity'}</strong></div><button className="button button-ghost" onClick={() => { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step } }); navigate('/brand/opportunities') }}>Save & exit</button></header>
     <div className="wizard-stepper">{wizardSteps.map((label, index) => <button key={label} className={step === index + 1 ? 'active' : step > index + 1 ? 'complete' : ''} onClick={() => go(index + 1)}><span>{step > index + 1 ? <Check size={13} /> : index + 1}</span><small>{label}</small></button>)}</div>
     <main className="wizard-body">
-      {step === 1 ? <WizardSection number="01" title="Opportunity" description="What are you posting?"><div className="form-grid form-grid-two"><label className="field full"><span>Opportunity name</span><input aria-label="Opportunity name" autoFocus value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Leaders claim a fixed share after you post.</InfoToast></WizardSection> : null}
+      {step === 1 ? <WizardSection number="01" title="Opportunity" description="What are you posting?"><div className="form-grid form-grid-two"><label className="field full"><span>Opportunity name</span><input aria-label="Opportunity name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Leaders claim a fixed share after you post.</InfoToast></WizardSection> : null}
       {step === 2 ? <WizardSection number="02" title="Timing and pool" description="Set dates, output, and pool."><div className="form-grid form-grid-two"><label className="field"><span>Preparation starts</span><input aria-label="Preparation starts" type="date" value={draft.preparationStart} onChange={(event) => updatePeriod('preparation', { start: event.target.value })} /></label><label className="field"><span>Preparation days</span><div className="input-suffix"><input aria-label="Preparation days" type="number" min="1" value={draft.preparationDays} onChange={(event) => updatePeriod('preparation', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.preparationEnd)}</small></label><label className="field"><span>Publishing starts</span><input aria-label="Publishing starts" type="date" value={draft.liveStart} onChange={(event) => updatePeriod('live', { start: event.target.value })} /></label><label className="field"><span>Publishing days</span><div className="input-suffix"><input aria-label="Publishing days" type="number" min="1" value={draft.liveDays} onChange={(event) => updatePeriod('live', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.liveEnd)}</small></label><label className="field"><span>Content target</span><div className="input-suffix"><input aria-label="Content target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><label className="field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
       {step === 3 ? <WizardSection number="03" title="Creator brief" description="Give creators only what they need."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
       {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">OPPORTUNITY</span><h2>{draft.name || 'Untitled opportunity'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><CalendarDays size={18} /><div><span>Preparation</span><strong>{formatDate(draft.preparationStart)} – {formatDate(draft.preparationEnd)}</strong><small>{draft.preparationDays} days</small></div></section><section><Clock3 size={18} /><div><span>Publishing</span><strong>{formatDate(draft.liveStart)} – {formatDate(draft.liveEnd)}</strong><small>{draft.liveDays} days</small></div></section><section><Target size={18} /><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><WalletCards size={18} /><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
@@ -133,7 +133,36 @@ export function BrandOpportunities() {
   const [filter, setFilter] = useState('all')
   const filters = ['all', 'Draft', 'Open', 'Partially Claimed', 'Live', 'Completed']
   const visible = filter === 'all' ? state.opportunities : state.opportunities.filter((item) => item.status === filter)
-  return <div className="page-stack"><PageHeader eyebrow="CAMPAIGN OPPORTUNITIES" title="Content commitments, from post to completion" description="Post fixed opportunities and let verified communities claim their automatic share." actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New opportunity</Link>} /><div className="filter-tabs">{filters.map((item) => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item === 'all' ? 'All' : item}<span>{item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length}</span></button>)}</div><div className="opportunity-grid">{visible.map((opportunity) => { const product = state.products.find((item) => item.id === opportunity.productId); const metrics = getOpportunityMetrics(state, opportunity.id); return <OpportunityCard key={opportunity.id} id={opportunity.id} name={opportunity.name} product={product?.name ?? 'Product'} platform={opportunity.platform} status={opportunity.status} content={`${opportunity.requiredContent} published contents`} budget={formatCurrency(opportunity.totalBudget)} dates={`${formatDate(opportunity.liveStart)} – ${formatDate(opportunity.liveEnd)}`} progress={metrics.completionPercentage} to={`/brand/opportunities/${opportunity.id}`} /> })}</div></div>
+  return <div className="page-stack">
+    <PageHeader eyebrow="CAMPAIGN OPPORTUNITIES" title="Content commitments, from post to completion" description="Post fixed opportunities and let verified communities claim their automatic share." actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New opportunity</Link>} />
+    <label className="opportunity-filter-mobile"><span>Show</span><select aria-label="Filter opportunities" value={filter} onChange={(event) => setFilter(event.target.value)}>{filters.map((item) => <option key={item} value={item}>{item === 'all' ? 'All opportunities' : item} ({item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length})</option>)}</select></label>
+    <div className="filter-tabs opportunity-filter-tabs">{filters.map((item) => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item === 'all' ? 'All' : item}<span>{item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length}</span></button>)}</div>
+    <div className="opportunity-grid">{visible.map((opportunity) => {
+      const product = state.products.find((item) => item.id === opportunity.productId)
+      const metrics = getOpportunityMetrics(state, opportunity.id)
+      const to = `/brand/opportunities/${opportunity.id}`
+      return <div className="opportunity-responsive-item" key={opportunity.id}>
+        <div className="opportunity-card-desktop"><OpportunityCard id={opportunity.id} name={opportunity.name} product={product?.name ?? 'Product'} platform={opportunity.platform} status={opportunity.status} content={`${opportunity.requiredContent} published contents`} budget={formatCurrency(opportunity.totalBudget)} dates={`${formatDate(opportunity.liveStart)} – ${formatDate(opportunity.liveEnd)}`} progress={metrics.completionPercentage} to={to} /></div>
+        <details className="opportunity-card-mobile">
+          <summary>
+            <span className="campaign-mark">{opportunity.name.slice(0, 1)}</span>
+            <span><small>{opportunity.platform}</small><strong>{opportunity.name}</strong></span>
+            <StatusBadge status={opportunity.status} />
+          </summary>
+          <div className="opportunity-mobile-body">
+            <p>{product?.name ?? 'Product'}</p>
+            <dl>
+              <div><dt>Content target</dt><dd>{opportunity.requiredContent}</dd></div>
+              <div><dt>Pool value</dt><dd>{formatCurrency(opportunity.totalBudget)}</dd></div>
+              <div><dt>Publishing</dt><dd>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</dd></div>
+            </dl>
+            <ProgressBar value={metrics.completionPercentage} label="Counted completion" />
+            <Link className="button button-secondary button-block" to={to}>Open workspace <ArrowRight size={15} /></Link>
+          </div>
+        </details>
+      </div>
+    })}</div>
+  </div>
 }
 
 export function BrandOpportunityWorkspace() {
@@ -174,7 +203,49 @@ export function BrandOpportunityWorkspace() {
 function BrandContentTable({ opportunityId, title = 'Consolidated campaign content', description = 'Published links recorded by participating communities. Brand monitoring is read-only.' }: { opportunityId?: string; title?: string; description?: string }) {
   const { state } = useApp()
   const rows = [...state.contents].reverse().filter((item) => (!opportunityId || item.opportunityId === opportunityId) && ['Published', 'Recorded', 'Validated', 'Counted'].includes(item.status)).slice(0, 40)
-  return <Panel title={title} description={description}><div className="table-wrap"><table><thead><tr><th>Creator</th><th>Community</th><th>Community campaign</th><th>Status</th><th>Published link</th><th>Views</th><th>Engagement</th></tr></thead><tbody>{rows.map((content) => { const member = state.members.find((item) => item.id === content.memberId)!; const community = state.communities.find((item) => item.id === member.communityId)!; const campaign = state.communityCampaigns.find((item) => item.id === content.communityCampaignId)!; return <tr key={content.id}><td><div className="person-cell"><Avatar initials={member.initials} size="sm" /><span><strong>{member.name}</strong><small>{member.handle}</small></span></div></td><td>{community.name}</td><td>{campaign.title}</td><td><ContentBadge status={content.status} /></td><td>{content.publishedUrl ? <a className="table-link" href={content.publishedUrl} target="_blank" rel="noreferrer">Open post ↗</a> : '—'}</td><td>{formatNumber(content.views)}</td><td>{formatNumber(content.engagement)}</td></tr> })}</tbody></table></div>{rows.length === 0 ? <EmptyState icon={Boxes} title="No published content yet" description="Recorded community content will appear here during the live campaign." /> : null}</Panel>
+  const contentRows = rows.map((content) => {
+    const member = state.members.find((item) => item.id === content.memberId)!
+    const community = state.communities.find((item) => item.id === member.communityId)!
+    const campaign = state.communityCampaigns.find((item) => item.id === content.communityCampaignId)!
+    return { content, member, community, campaign }
+  })
+
+  return <Panel title={title} description={description}>
+    <div className="table-wrap content-table-desktop">
+      <table>
+        <thead><tr><th>Creator</th><th>Community</th><th>Community campaign</th><th>Status</th><th>Published link</th><th>Views</th><th>Engagement</th></tr></thead>
+        <tbody>{contentRows.map(({ content, member, community, campaign }) => <tr key={content.id}>
+          <td><div className="person-cell"><Avatar initials={member.initials} size="sm" /><span><strong>{member.name}</strong><small>{member.handle}</small></span></div></td>
+          <td>{community.name}</td>
+          <td>{campaign.title}</td>
+          <td><ContentBadge status={content.status} /></td>
+          <td>{content.publishedUrl ? <a className="table-link" href={content.publishedUrl} target="_blank" rel="noreferrer">Open post ↗</a> : '—'}</td>
+          <td>{formatNumber(content.views)}</td>
+          <td>{formatNumber(content.engagement)}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <details className="content-mobile-campaign">
+      <summary>Browse {contentRows.length} posts</summary>
+      <div className="content-mobile-list">
+        {contentRows.map(({ content, member, community, campaign }) => <details key={content.id} className="content-mobile-item">
+          <summary>
+            <Avatar initials={member.initials} size="sm" />
+            <span><strong>{member.name}</strong><small>{member.handle}</small></span>
+            <ContentBadge status={content.status} />
+          </summary>
+          <dl>
+            <div><dt>Community</dt><dd>{community.name}</dd></div>
+            <div><dt>Campaign</dt><dd>{campaign.title}</dd></div>
+            <div><dt>Views</dt><dd>{formatNumber(content.views)}</dd></div>
+            <div><dt>Engagement</dt><dd>{formatNumber(content.engagement)}</dd></div>
+          </dl>
+          {content.publishedUrl ? <a className="button button-secondary button-block" href={content.publishedUrl} target="_blank" rel="noreferrer">Open published post ↗</a> : null}
+        </details>)}
+      </div>
+    </details>
+    {rows.length === 0 ? <EmptyState icon={Boxes} title="No published content yet" description="Recorded community content will appear here during the live campaign." /> : null}
+  </Panel>
 }
 
 function CompletionReport({ opportunityId }: { opportunityId: string }) {

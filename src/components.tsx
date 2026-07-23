@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom'
 import type { ContentStatus, OpportunityStatus } from './types'
 
 export function Logo({ compact = false }: { compact?: boolean }) {
-  return <div className={`logo ${compact ? 'logo-compact' : ''}`} aria-label="OkPo"><span>O</span>{compact ? null : <strong>kPo</strong>}<i /></div>
+  return <div className={`logo ${compact ? 'logo-compact' : ''}`} aria-label="OkPo"><img src="/assets/okpo-logo.png" alt="" /></div>
 }
 
-export function Avatar({ initials, tone = 'yellow', size = 'md' }: { initials: string; tone?: 'yellow' | 'black' | 'cream' | 'coral' | 'mint'; size?: 'sm' | 'md' | 'lg' }) {
-  return <span className={`avatar avatar-${tone} avatar-${size}`}>{initials}</span>
+export function Avatar({ initials, tone = 'yellow', size = 'md', src }: { initials: string; tone?: 'yellow' | 'black' | 'cream' | 'coral' | 'mint'; size?: 'sm' | 'md' | 'lg'; src?: string }) {
+  return <span className={`avatar avatar-${tone} avatar-${size} ${src ? 'avatar-image' : ''}`}>{src ? <img src={src} alt="" /> : initials}</span>
 }
 
 export function StatusBadge({ status }: { status: string }) {
