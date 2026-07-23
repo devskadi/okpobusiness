@@ -19,10 +19,18 @@ describe('OkPo role workspaces', () => {
     expect(screen.getByText('Engagement')).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
-    expect(screen.getByText('Active creators')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Internship Campaign' })).toBeInTheDocument()
     expect(screen.getByText('Active communities')).toBeInTheDocument()
     expect(screen.getByText('FEATURED CAMPAIGNS')).toBeInTheDocument()
+  })
+
+  it('opens the active community directory', async () => {
+    const user = userEvent.setup()
+    renderRoute('/brand')
+    await user.click(screen.getByRole('button', { name: /Active communities/i }))
+    expect(screen.getByRole('heading', { name: 'Madrid Philippines communities' })).toBeInTheDocument()
+    expect(screen.getByText('Madrid Performers')).toBeInTheDocument()
+    expect(screen.getByText('Field Riders')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {

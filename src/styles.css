@@ -184,6 +184,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .image-avatar-stack img { width: 100%; height: 100%; object-fit: cover; }
 .campaign-logo-stack > i { background: #111; }
 .campaign-logo-stack img { object-fit: contain; }
+.community-directory-card { grid-column: 1 / -1; width: 100%; min-height: 122px; padding: 17px; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.community-directory-card:hover { border-color: #c6c6bb; box-shadow: var(--shadow); }
+.community-directory-preview { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.community-directory-preview > span:last-child { color: var(--muted); display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 750; }
+.community-directory-modal { width: min(620px, calc(100vw - 28px)); }
+.community-directory-list { display: grid; gap: 8px; }
+.community-directory-list article { padding: 10px; border: 1px solid var(--line); border-radius: 11px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 11px; }
+.community-directory-logo { width: 48px; height: 48px; border-radius: 10px; background: #111; object-fit: contain; }
+.community-directory-list article > div { display: grid; gap: 4px; }
+.community-directory-list article > div strong { font-size: 12px; }
+.community-directory-list article > div span { color: var(--muted); font-size: 8px; }
+.community-member-preview { padding-left: 9px; display: flex; }
+.community-member-preview img { width: 40px; height: 40px; margin-left: -9px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 7px rgba(23, 23, 19, .16); }
 .featured-campaigns { min-width: 0; }
 .featured-campaigns-heading { margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between; }
 .featured-campaigns-heading > span:last-child { color: var(--muted); font-size: 9px; font-weight: 700; }
@@ -819,12 +832,23 @@ td > strong { color: var(--ink); }
   .brand-kpi-grid .dashboard-activity-card .metric-top { grid-column: 1 / -1; grid-row: 1; }
   .brand-kpi-grid .dashboard-activity-card > strong { grid-column: 1; grid-row: 2; }
   .brand-kpi-grid .dashboard-activity-card > small { grid-column: 2; grid-row: 2; margin: 0; }
+  .brand-kpi-grid .community-directory-card { min-height: 110px; display: flex; flex-direction: column; align-items: stretch; }
+  .brand-kpi-grid .community-directory-card .metric-top { width: 100%; }
+  .community-directory-preview > span:last-child { font-size: 0; }
+  .community-directory-preview > span:last-child svg { width: 18px; height: 18px; }
+  .community-directory-list article { grid-template-columns: auto minmax(0, 1fr); }
+  .community-member-preview { grid-column: 2; padding-left: 9px; }
   .metric-product-detail { gap: 5px; }
-  .featured-campaign-carousel { grid-auto-columns: minmax(270px, 88%); }
-  .featured-campaign-card { height: 330px; grid-template-columns: 1fr; grid-template-rows: 138px minmax(0, 1fr); }
-  .featured-campaign-body { padding: 15px; }
-  .featured-campaign-body h2 { margin-top: 8px; font-size: 23px; }
-  .featured-campaign-progress strong { font-size: 28px; }
+  .featured-campaigns { margin-inline: -14px; }
+  .featured-campaigns-heading { padding-inline: 14px; }
+  .featured-campaign-carousel { grid-auto-columns: calc(100vw - 28px); gap: 10px; padding-inline: 14px; scroll-padding-inline: 14px; scroll-snap-type: x mandatory; }
+  .featured-campaign-card { width: calc(100vw - 28px); height: 190px; grid-template-columns: 40% minmax(0, 1fr); grid-template-rows: 1fr; }
+  .featured-campaign-body { padding: 13px; }
+  .featured-campaign-body h2 { margin-top: 7px; font-size: clamp(17px, 5vw, 21px); }
+  .featured-campaign-body > p { font-size: 8px; }
+  .featured-campaign-progress strong { font-size: 25px; }
+  .featured-campaign-body .progress { margin: 5px 0 8px; }
+  .featured-campaign-body dl { gap: 18px; }
   .floating-create-button { right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); width: 50px; height: 50px; min-height: 50px; padding: 0; display: grid; place-items: center; }
   .floating-create-button > span { display: none; }
   .metrics-grid-four, .metrics-grid-five, .metrics-grid-six, .metrics-grid-three { grid-template-columns: repeat(2, minmax(0, 1fr)); }

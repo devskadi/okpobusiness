@@ -3,7 +3,7 @@ import {
   Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Package, Pencil, Plus, Send,
   Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Avatar, Callout, ContentBadge, EmptyState, InfoToast, MetricCard, OpportunityCard, PageHeader, Panel, ProgressBar,
@@ -21,6 +21,8 @@ function opportunityBudgetUsed(state: ReturnType<typeof useApp>['state'], opport
 
 export function BrandDashboard() {
   const { state } = useApp()
+  const [communitiesOpen, setCommunitiesOpen] = useState(false)
+  const featuredCarouselRef = useRef<HTMLDivElement>(null)
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
   const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
   const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
@@ -33,12 +35,35 @@ export function BrandDashboard() {
     { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png', progress: 83, content: 124 },
   ]
   const creatorImages = ['/assets/madrid-performer-1.jpeg', '/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
+  const featuredCommunities = [
+    { name: 'Madrid Performers', logo: campaignImages[0].src, members: creatorImages.slice(0, 2) },
+    { name: 'Field Riders', logo: campaignImages[1].src, members: creatorImages.slice(2, 4) },
+    { name: 'Assessmate Mentors', logo: campaignImages[2].src, members: [creatorImages[1], creatorImages[3]] },
+    { name: 'Gasul Community', logo: campaignImages[3].src, members: [creatorImages[0], creatorImages[2]] },
+  ]
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const mobile = window.matchMedia('(max-width: 700px)')
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (!mobile.matches || reducedMotion.matches) return
+    const timer = window.setInterval(() => {
+      const carousel = featuredCarouselRef.current
+      if (!carousel || carousel.children.length < 2) return
+      const cardWidth = carousel.clientWidth
+      if (!cardWidth) return
+      const current = Math.round(carousel.scrollLeft / cardWidth)
+      const next = (current + 1) % carousel.children.length
+      carousel.scrollTo({ left: next * cardWidth, behavior: 'smooth' })
+    }, 3000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   return <div className="page-stack">
     <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New opportunity</span></Link>
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
-      <div className="featured-campaign-carousel">
+      <div className="featured-campaign-carousel" ref={featuredCarouselRef} data-autoplay="3000">
         {campaignImages.map((campaign) => <article className="featured-campaign-card" key={campaign.name}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
           <div className="featured-campaign-body">
@@ -62,9 +87,24 @@ export function BrandDashboard() {
       </article>
       <MetricCard label="Views" value={formatNumber(views)} detail="Across published campaign content" icon={Eye} />
       <MetricCard label="Engagement" value={formatNumber(engagement)} detail="Interactions across campaign content" icon={BarChart3} />
-      <MetricCard label="Active communities" value={campaignImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span></span>} icon={Layers3} className="dashboard-activity-card" />
-      <MetricCard label="Active creators" value={creatorImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack">{creatorImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span></span>} icon={Users} className="dashboard-activity-card" />
+      <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
+        <div className="metric-top"><span>Active communities</span><i><Layers3 size={18} /></i></div>
+        <div className="community-directory-preview">
+          <span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span>
+          <span>View communities <ArrowRight size={15} /></span>
+        </div>
+      </button>
     </section>
+    {communitiesOpen ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="community-directory-title">
+      <div className="modal-card community-directory-modal">
+        <header><div><span className="eyebrow">ACTIVE COMMUNITIES</span><h2 id="community-directory-title">Madrid Philippines communities</h2></div><button className="icon-button" onClick={() => setCommunitiesOpen(false)} aria-label="Close communities">×</button></header>
+        <div className="community-directory-list">{featuredCommunities.map((community) => <article key={community.name}>
+          <img className="community-directory-logo" src={community.logo} alt="" />
+          <div><strong>{community.name}</strong><span>Active community</span></div>
+          <span className="community-member-preview">{community.members.map((src) => <img src={src} alt="" key={src} />)}</span>
+        </article>)}</div>
+      </div>
+    </div> : null}
   </div>
 }
 
