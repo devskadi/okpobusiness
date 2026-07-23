@@ -147,10 +147,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .metrics-grid-five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .metrics-grid-six { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .metrics-grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.brand-kpi-grid { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+.brand-kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .metric-card { min-height: 135px; padding: 19px; border: 1px solid var(--line); border-radius: 13px; background: var(--paper); box-shadow: var(--shadow-small); display: flex; flex-direction: column; }
-.gpv-primary { min-height: 165px; }
-.gpv-primary > strong { font-size: clamp(38px, 4vw, 56px); }
+.brand-kpi-grid .finance-primary { grid-column: span 2; }
+.gpv-primary { min-height: 145px; }
+.gpv-primary .metric-top { font-size: 13px; }
+.gpv-primary > strong { font-size: clamp(48px, 5vw, 72px); }
+.gpv-primary .metric-top > i { background: var(--yellow-soft); color: #715a00; }
+.liquidity-primary > strong { font-size: clamp(38px, 4vw, 58px); }
 .metric-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 10px; font-weight: 700; }
 .metric-top > i { width: 31px; height: 31px; border-radius: 8px; background: #f3f3ed; color: #6e6f67; display: grid; place-items: center; }
 .metric-card > strong { margin-top: auto; font-size: clamp(25px, 2.3vw, 35px); line-height: 1; letter-spacing: -.055em; }
@@ -159,6 +163,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .metric-yellow .metric-top, .metric-yellow > small { color: var(--muted); }
 .metric-yellow .metric-top > i { background: #f3f3ed; color: var(--ink); }
 .metric-black { background: var(--ink); color: #fff; }
+.brand-kpi-grid .metric-card:not(.gpv-primary) { min-height: 145px; padding: 17px; }
+.brand-kpi-grid .dashboard-activity-card { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 14px; align-items: end; }
+.brand-kpi-grid .dashboard-activity-card .metric-top { grid-column: 1 / -1; align-self: start; }
+.brand-kpi-grid .dashboard-activity-card > strong { grid-column: 1; grid-row: 2; margin: 0; align-self: center; }
+.brand-kpi-grid .dashboard-activity-card > small { grid-column: 2; grid-row: 2; margin: 0; align-self: center; }
+.metric-product-detail { display: flex; align-items: center; gap: 8px; }
+.product-avatar-stack { display: flex; padding-left: 12px; }
+.product-avatar-stack > i { width: 48px; height: 48px; margin-left: -12px; border: 0; border-radius: 12px; background: var(--yellow-soft); color: #6f5900; display: grid; place-items: center; font-size: 9px; font-style: normal; font-weight: 850; box-shadow: 0 3px 9px rgba(23, 23, 19, .14); }
+.community-avatar-stack > i { background: var(--green-soft); color: var(--green); }
+.image-avatar-stack > i { overflow: hidden; border-radius: 50%; background: var(--paper); }
+.image-avatar-stack img { width: 100%; height: 100%; object-fit: cover; }
+.campaign-logo-stack > i { background: #111; }
+.campaign-logo-stack img { object-fit: contain; }
+.madrid-campaign-card { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: var(--shadow-small); display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.madrid-campaign-card h2 { margin: 6px 0 3px; font-size: 25px; letter-spacing: -.04em; }
+.madrid-campaign-card p { margin: 0; color: var(--muted); font-size: 10px; }
+.madrid-community-list { display: flex; gap: 10px; }
+.madrid-community-list > span { min-width: 190px; padding: 8px 12px 8px 8px; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; gap: 11px; }
+.madrid-community-list strong { font-size: 11px; }
+.mini-photo-stack { display: flex; padding-left: 10px; }
+.mini-photo-stack img { width: 44px; height: 44px; margin-left: -10px; border: 0; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 7px rgba(23, 23, 19, .16); }
+.floating-create-button { position: fixed; z-index: 28; right: 26px; bottom: 24px; min-height: 48px; padding-inline: 18px; border-radius: 999px; box-shadow: 0 12px 30px rgba(23, 23, 19, .2); }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: var(--shadow-small); }
 .panel-header { min-height: 42px; margin-bottom: 17px; display: flex; align-items: start; justify-content: space-between; gap: 20px; }
 .panel-header h2 { margin: 0; font-size: 16px; }
@@ -713,7 +739,7 @@ td > strong { color: var(--ink); }
 
 @media (max-width: 1180px) {
   .brand-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .brand-kpi-grid .gpv-primary { grid-column: 1 / -1; }
+  .brand-kpi-grid .finance-primary { grid-column: span 1; }
   .metrics-grid-four, .metrics-grid-five, .metrics-grid-six { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .opportunity-grid, .community-campaign-grid, .product-grid, .community-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stage-track { grid-template-columns: repeat(3, 1fr); }
@@ -771,6 +797,16 @@ td > strong { color: var(--ink); }
   .brand-kpi-grid .metric-card:not(.gpv-primary) .metric-top > i { display: none; }
   .brand-kpi-grid .metric-card:not(.gpv-primary) > strong { grid-column: 2; grid-row: 1 / span 2; margin: 0; font-size: 25px; }
   .brand-kpi-grid .metric-card:not(.gpv-primary) > small { grid-column: 1; grid-row: 2; margin-top: 4px; }
+  .brand-kpi-grid .dashboard-activity-card { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr; column-gap: 12px; }
+  .brand-kpi-grid .dashboard-activity-card .metric-top { grid-column: 1 / -1; grid-row: 1; }
+  .brand-kpi-grid .dashboard-activity-card > strong { grid-column: 1; grid-row: 2; }
+  .brand-kpi-grid .dashboard-activity-card > small { grid-column: 2; grid-row: 2; margin: 0; }
+  .metric-product-detail { gap: 5px; }
+  .madrid-campaign-card { padding: 18px; align-items: stretch; flex-direction: column; gap: 16px; }
+  .madrid-community-list { flex-direction: column; }
+  .madrid-community-list > span { width: 100%; min-width: 0; }
+  .floating-create-button { right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); width: 50px; height: 50px; min-height: 50px; padding: 0; display: grid; place-items: center; }
+  .floating-create-button > span { display: none; }
   .metrics-grid-four, .metrics-grid-five, .metrics-grid-six, .metrics-grid-three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metric-card { min-height: 116px; padding: 15px; }
   .metric-card > strong { font-size: 25px; }

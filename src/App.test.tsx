@@ -14,11 +14,15 @@ describe('OkPo role workspaces', () => {
 
   it('renders the Brand command center and fixed-content campaign', () => {
     renderRoute('/brand')
-    expect(screen.getByRole('heading', { name: /Portfolio overview/i })).toBeInTheDocument()
-    expect(screen.getAllByText('Real Skin, Real Routine').length).toBeGreaterThan(0)
+    expect(screen.getByRole('heading', { name: /Good morning, Alexis/i })).toBeInTheDocument()
+    expect(screen.getByText('Views')).toBeInTheDocument()
+    expect(screen.getByText('Engagement')).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
-    expect(screen.getByText('GPV consumed')).toBeInTheDocument()
-    expect(screen.getByText('₱540,000')).toBeInTheDocument()
+    expect(screen.getByText('Liquidity')).toBeInTheDocument()
+    expect(screen.getByText('Active campaigns')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Internship Campaign' })).toBeInTheDocument()
+    expect(screen.getByText('Active communities')).toBeInTheDocument()
+    expect(screen.getByText('Madrid Performers')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {

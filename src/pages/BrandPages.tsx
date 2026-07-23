@@ -1,6 +1,6 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2,
-  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Megaphone, Package, Pencil, Plus, Send,
+  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Package, Pencil, Plus, Send,
   Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -12,8 +12,6 @@ import {
 import { formatCurrency, formatDate, formatNumber, getCommunityCampaignMetrics, getOpportunityMetrics, useApp } from '../store'
 import type { OpportunityDraft, Product } from '../types'
 
-const contentStages = ['Published', 'Recorded', 'Validated', 'Counted'] as const
-
 function opportunityBudgetUsed(state: ReturnType<typeof useApp>['state'], opportunityId: string) {
   return state.communityCampaigns.filter((item) => item.opportunityId === opportunityId).reduce((total, campaign) => {
     const metrics = getCommunityCampaignMetrics(state, campaign.id)
@@ -23,47 +21,41 @@ function opportunityBudgetUsed(state: ReturnType<typeof useApp>['state'], opport
 
 export function BrandDashboard() {
   const { state } = useApp()
-  const live = state.opportunities.filter((item) => ['Live', 'Preparation', 'Fully Claimed', 'Partially Claimed', 'Open'].includes(item.status))
-  const totalRequired = live.reduce((sum, item) => sum + item.requiredContent, 0)
-  const totalCounted = live.reduce((sum, item) => sum + getOpportunityMetrics(state, item.id).counted, 0)
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
-  const grossPaymentVolume = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
-  const grossPoolConsumed = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
-  const hero = state.opportunities.find((item) => item.id === 'opportunity-real-skin') ?? live[0]
-  const heroMetrics = hero ? getOpportunityMetrics(state, hero.id) : null
-  const attention = state.opportunities.filter((item) => item.status === 'Open' || item.status === 'Partially Claimed')
+  const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
+  const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
+  const views = state.contents.reduce((sum, item) => sum + item.views, 0)
+  const engagement = state.contents.reduce((sum, item) => sum + item.engagement, 0)
+  const campaignImages = [
+    { name: 'Internship Campaign', src: '/assets/campaign-internship.png' },
+    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg' },
+    { name: 'Assessmate', src: '/assets/campaign-assessmate.png' },
+    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png' },
+  ]
+  const communityImages = ['/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
 
   return <div className="page-stack">
-    <PageHeader eyebrow="BRAND" title="Portfolio overview" description="Pool and delivery at a glance." actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New opportunity</Link>} />
+    <PageHeader eyebrow="MADRID PHILIPPINES" title="Good morning, Alexis" description="Here’s how your community campaigns are performing." />
+    <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New opportunity</span></Link>
     <section className="metrics-grid brand-kpi-grid">
-      <MetricCard label="Gross Pool Value" value={formatCurrency(grossPaymentVolume)} detail={`${postedOpportunities.length} posted opportunities`} icon={WalletCards} tone="black" className="gpv-primary" />
-      <MetricCard label="GPV consumed" value={formatCurrency(grossPoolConsumed)} detail={`${grossPaymentVolume ? Math.round(grossPoolConsumed / grossPaymentVolume * 100) : 0}% of pool`} icon={WalletCards} />
-      <MetricCard label="Counted content" value={formatNumber(totalCounted)} detail={`${totalRequired ? Math.round(totalCounted / totalRequired * 100) : 0}% delivered`} icon={CheckCircle2} />
+      <MetricCard label="Gross Pool Value" value={formatCurrency(grossPoolValue)} detail={`${postedOpportunities.length} posted opportunities`} icon={WalletCards} className="gpv-primary finance-primary" />
+      <MetricCard label="Liquidity" value={formatCurrency(liquidity)} detail={`${grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed`} icon={WalletCards} className="finance-primary liquidity-primary" />
+      <MetricCard label="Views" value={formatNumber(views)} detail="Across published campaign content" icon={Eye} />
+      <MetricCard label="Engagement" value={formatNumber(engagement)} detail="Interactions across campaign content" icon={BarChart3} />
+      <MetricCard label="Active campaigns" value={campaignImages.length} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span></span>} icon={Layers3} className="dashboard-activity-card" />
+      <MetricCard label="Active communities" value={2} detail={<span className="metric-product-detail"><span className="product-avatar-stack image-avatar-stack">{communityImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span></span>} icon={Users} className="dashboard-activity-card" />
     </section>
-
-    {hero && heroMetrics ? <section className="hero-campaign">
-      <div className="hero-campaign-copy"><span className="eyebrow">ACTIVE OPPORTUNITY</span><div className="hero-title"><h2>{hero.name}</h2><StatusBadge status={hero.status} /></div><p>{state.products.find((item) => item.id === hero.productId)?.name}</p><div className="hero-progress-number"><strong>{heroMetrics.completionPercentage}%</strong><span>counted</span></div><ProgressBar value={heroMetrics.completionPercentage} tone="black" /><div className="hero-stage-grid">{contentStages.map((stage) => <div key={stage}><span>{stage}</span><strong>{heroMetrics[stage.toLowerCase() as 'published' | 'recorded' | 'validated' | 'counted']}</strong></div>)}</div></div>
-      <aside><span className="eyebrow">DELIVERY</span><dl><div><dt>Target</dt><dd>{heroMetrics.required}</dd></div><div><dt>Allocated</dt><dd>{heroMetrics.allocated}</dd></div><div><dt>Remaining</dt><dd>{heroMetrics.remaining}</dd></div><div><dt>Consumed</dt><dd>{formatCurrency(opportunityBudgetUsed(state, hero.id))}</dd></div></dl><Link className="button button-dark button-block" to={`/brand/opportunities/${hero.id}`}>Open opportunity <ArrowRight size={16} /></Link></aside>
-    </section> : null}
-
-    <div className="two-column-layout">
-      <Panel title="Opportunities" action={<Link className="text-link" to="/brand/opportunities">View all</Link>}>
-        <div className="campaign-list compact-list">{state.opportunities.slice(0, 4).map((opportunity) => {
-          const metrics = getOpportunityMetrics(state, opportunity.id)
-          return <Link to={`/brand/opportunities/${opportunity.id}`} key={opportunity.id} className="campaign-list-row"><span className="campaign-dot">{opportunity.name.slice(0, 1)}</span><div><strong>{opportunity.name}</strong><small>{metrics.counted} of {opportunity.requiredContent} counted</small></div><div className="row-progress"><ProgressBar value={metrics.completionPercentage} /></div><StatusBadge status={opportunity.status} /><ArrowRight size={16} /></Link>
-        })}</div>
-      </Panel>
-      <Panel title="Needs attention">
-        <div className="attention-list">{attention.map((item) => {
-          const metrics = getOpportunityMetrics(state, item.id)
-          return <Link key={item.id} to={`/brand/opportunities/${item.id}`}><span className="attention-icon"><Flag size={17} /></span><div><strong>{item.name}</strong><p>{item.status === 'Open' ? 'Waiting for its first community claim.' : `${item.requiredContent - metrics.allocated} contents still available to claim.`}</p></div><ArrowRight size={16} /></Link>
-        })}{attention.length === 0 ? <EmptyState title="Everything is allocated" description="No open capacity needs attention." /> : null}</div>
-      </Panel>
-    </div>
-
-    <Panel title="Recent activity">
-      <div className="activity-list">{state.activity.slice(0, 6).map((event) => <div key={event.id} className="activity-row"><span className={`activity-icon activity-${event.role}`}>{event.role === 'system' ? <Sparkles size={16} /> : event.role === 'leader' ? <Users size={16} /> : event.role === 'member' ? <FileCheck2 size={16} /> : <Megaphone size={16} />}</span><div><strong>{event.title}</strong><p>{event.detail}</p></div><time>{event.timestamp}</time></div>)}</div>
-    </Panel>
+    <section className="madrid-campaign-card">
+      <div>
+        <span className="eyebrow">ACTIVE CAMPAIGN</span>
+        <h2>Internship Campaign</h2>
+        <p>Madrid Philippines</p>
+      </div>
+      <div className="madrid-community-list">
+        <span><span className="mini-photo-stack"><img src="/assets/madrid-performer-1.jpeg" alt="" /><img src="/assets/madrid-performer-2.jpeg" alt="" /></span><strong>Madrid Performers</strong></span>
+        <span><span className="mini-photo-stack"><img src="/assets/madrid-rider-1.jpeg" alt="" /><img src="/assets/madrid-rider-2.jpeg" alt="" /></span><strong>Field Riders</strong></span>
+      </div>
+    </section>
   </div>
 }
 
