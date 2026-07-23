@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" role="img" aria-label="Madrid Philippines">
+  <path d="M8 88V18L34 6l26 25L86 6l26 12v70H88V43L60 70 32 43v45Z" fill="#fff"/>
+  <path d="M8 18 34 6 21 48 8 58Z" fill="#ef3f45"/>
+  <path d="m34 6 26 25-39 17Z" fill="#d92f3f"/>
+  <path d="m8 58 13-10 11-5v45H8Z" fill="#448dcc"/>
+  <path d="m21 48 39-17-28 29v28Z" fill="#236cb2"/>
+  <path d="m60 31 26-25 7 30-33 34Z" fill="#ffe522"/>
+  <path d="m86 6 26 12-19 18Z" fill="#f6cf1c"/>
+  <path d="m93 36 19-18v40L88 43Z" fill="#53bd43"/>
+  <path d="m88 43 24 15v30H88Z" fill="#168c4f"/>
+  <path d="m60 31 33 5-5 7-28 27Z" fill="#f4a51d"/>
+</svg>

@@ -53,6 +53,7 @@ export function AppShell() {
   const activeRole: ProfileRole = routeSegment === 'brand' || routeSegment === 'leader' || routeSegment === 'member' ? routeSegment : state.activeRole
   const meta = roleMeta[activeRole]
   const notices = state.notifications.filter((item) => item.role === activeRole)
+  const isBrandDashboard = location.pathname === '/brand'
 
   useEffect(() => {
     if (state.activeRole !== activeRole) dispatch({ type: 'SET_ROLE', role: activeRole })
@@ -94,9 +95,10 @@ export function AppShell() {
     <div className="main-shell">
       <header className="topbar">
         <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-        <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>
+        {isBrandDashboard
+          ? <div className="topbar-context brand-topbar-context"><img src="/assets/madrid-philippines.svg" alt="Madrid Philippines" /><h1>Good morning, Alexis</h1></div>
+          : <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>}
         <div className="topbar-actions">
-          <span className="environment-pill">Leadership prototype</span>
           <button className="icon-button notification-button" aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}><Bell size={18} />{notices.some((item) => !item.read) ? <i /> : null}</button>
           {notificationsOpen ? <div className="notification-popover"><header><strong>Notifications</strong><button onClick={() => setNotificationsOpen(false)}>Close</button></header>{notices.length ? notices.map((item) => <article key={item.id}><span className={item.read ? '' : 'unread'} /><div><strong>{item.title}</strong><p>{item.detail}</p><small>{item.time}</small></div></article>) : <p className="popover-empty">No notifications for this profile.</p>}</div> : null}
         </div>

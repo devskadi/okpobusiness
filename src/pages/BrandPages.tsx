@@ -27,22 +27,28 @@ export function BrandDashboard() {
   const views = state.contents.reduce((sum, item) => sum + item.views, 0)
   const engagement = state.contents.reduce((sum, item) => sum + item.engagement, 0)
   const campaignImages = [
-    { name: 'Internship Campaign', src: '/assets/campaign-internship.png' },
-    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg' },
-    { name: 'Assessmate', src: '/assets/campaign-assessmate.png' },
-    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png' },
+    { name: 'Internship Campaign', src: '/assets/campaign-internship.png', progress: 61, content: 184 },
+    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg', progress: 74, content: 96 },
+    { name: 'Assessmate', src: '/assets/campaign-assessmate.png', progress: 48, content: 72 },
+    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png', progress: 83, content: 124 },
   ]
   const creatorImages = ['/assets/madrid-performer-1.jpeg', '/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
 
   return <div className="page-stack">
-    <PageHeader eyebrow="MADRID PHILIPPINES" title="Good morning, Alexis" description="Here’s how your community campaigns are performing." />
     <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New opportunity</span></Link>
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
       <div className="featured-campaign-carousel">
         {campaignImages.map((campaign) => <article className="featured-campaign-card" key={campaign.name}>
-          <img src={campaign.src} alt="" />
-          <div><span>Madrid Philippines</span><h2>{campaign.name}</h2></div>
+          <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
+          <div className="featured-campaign-body">
+            <div><span className="eyebrow">FEATURED CAMPAIGN</span><span className="status-badge status-live"><i />Live</span></div>
+            <h2>{campaign.name}</h2>
+            <p>Madrid Philippines</p>
+            <div className="featured-campaign-progress"><strong>{campaign.progress}%</strong><span>delivered</span></div>
+            <div className="progress"><span style={{ width: `${campaign.progress}%` }} /></div>
+            <dl><div><dt>Published</dt><dd>{campaign.content + 42}</dd></div><div><dt>Counted</dt><dd>{campaign.content}</dd></div></dl>
+          </div>
         </article>)}
       </div>
     </section>
