@@ -19,20 +19,28 @@ function opportunityBudgetUsed(state: ReturnType<typeof useApp>['state'], opport
   }, 0)
 }
 
+type FeaturedCampaign = {
+  name: string
+  src: string
+  budget: number
+  target: number
+  weeks: number
+  goal: string
+}
+
 export function BrandDashboard() {
   const { state } = useApp()
   const [communitiesOpen, setCommunitiesOpen] = useState(false)
+  const [selectedCampaign, setSelectedCampaign] = useState<FeaturedCampaign | null>(null)
   const featuredCarouselRef = useRef<HTMLDivElement>(null)
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
   const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
   const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
-  const views = state.contents.reduce((sum, item) => sum + item.views, 0)
-  const engagement = state.contents.reduce((sum, item) => sum + item.engagement, 0)
-  const campaignImages = [
-    { name: 'Internship Campaign', src: '/assets/campaign-internship.png', progress: 61, content: 184 },
-    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg', progress: 74, content: 96 },
-    { name: 'Assessmate', src: '/assets/campaign-assessmate.png', progress: 48, content: 72 },
-    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png', progress: 83, content: 124 },
+  const campaignImages: FeaturedCampaign[] = [
+    { name: 'Internship Campaign', src: '/assets/campaign-internship.png', budget: 150000, target: 300, weeks: 8, goal: 'Attract qualified internship applicants through creator-led workplace stories.' },
+    { name: 'Tiko', src: '/assets/campaign-tiko.jpeg', budget: 90000, target: 180, weeks: 6, goal: 'Build awareness through playful, community-native creator content.' },
+    { name: 'Assessmate', src: '/assets/campaign-assessmate.png', budget: 120000, target: 150, weeks: 5, goal: 'Introduce Assessmate to students and early-career professionals.' },
+    { name: 'Petron Gasul', src: '/assets/campaign-petron-gasul.png', budget: 180000, target: 220, weeks: 10, goal: 'Reach households through trusted community recommendations.' },
   ]
   const creatorImages = ['/assets/madrid-performer-1.jpeg', '/assets/madrid-performer-2.jpeg', '/assets/madrid-rider-1.jpeg', '/assets/madrid-rider-2.jpeg']
   const featuredCommunities = [
@@ -64,16 +72,15 @@ export function BrandDashboard() {
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
       <div className="featured-campaign-carousel" ref={featuredCarouselRef} data-autoplay="3000">
-        {campaignImages.map((campaign) => <article className="featured-campaign-card" key={campaign.name}>
+        {campaignImages.map((campaign) => <button className="featured-campaign-card" key={campaign.name} onClick={() => setSelectedCampaign(campaign)}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
           <div className="featured-campaign-body">
             <h2>{campaign.name}</h2>
             <p>Madrid Philippines</p>
-            <div className="featured-campaign-progress"><strong>{campaign.progress}%</strong><span>delivered</span></div>
-            <div className="progress"><span style={{ width: `${campaign.progress}%` }} /></div>
-            <dl><div><dt>Published</dt><dd>{campaign.content + 42}</dd></div><div><dt>Counted</dt><dd>{campaign.content}</dd></div></dl>
+            <div className="featured-campaign-allocation"><span>Allocated</span><strong>{formatCurrency(campaign.budget)}</strong></div>
+            <dl><div><dt>Content target</dt><dd>{campaign.target}</dd></div><div><dt>Duration</dt><dd>{campaign.weeks} weeks</dd></div></dl>
           </div>
-        </article>)}
+        </button>)}
       </div>
     </section>
     <section className="metrics-grid brand-kpi-grid">
@@ -84,16 +91,29 @@ export function BrandDashboard() {
           <div><span>Liquidity</span><strong>{formatCurrency(liquidity)}</strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
         </div>
       </article>
-      <MetricCard label="Views" value={formatNumber(views)} detail="Across published campaign content" icon={Eye} />
-      <MetricCard label="Engagement" value={formatNumber(engagement)} detail="Interactions across campaign content" icon={BarChart3} />
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
-        <div className="metric-top"><span>Active communities</span><i><Layers3 size={18} /></i></div>
+        <div className="metric-top"><span>Activated communities</span><i><Layers3 size={18} /></i></div>
         <div className="community-directory-preview">
           <span className="product-avatar-stack image-avatar-stack campaign-logo-stack">{campaignImages.map((campaign) => <i key={campaign.name} title={campaign.name}><img src={campaign.src} alt="" /></i>)}</span>
           <span>View communities <ArrowRight size={15} /></span>
         </div>
       </button>
+      <article className="metric-card creator-roster-card">
+        <div className="metric-top"><span>Creator roster</span><i><Users size={18} /></i></div>
+        <div className="community-directory-preview">
+          <span className="product-avatar-stack image-avatar-stack">{creatorImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span>
+          <span>Currently engaged</span>
+        </div>
+      </article>
     </section>
+    {selectedCampaign ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="campaign-details-title">
+      <div className="modal-card campaign-details-modal">
+        <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>
+        <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p>{selectedCampaign.goal}</p></div></div>
+        <dl className="campaign-details-metrics"><div><dt>Allocated budget</dt><dd>{formatCurrency(selectedCampaign.budget)}</dd></div><div><dt>Content target</dt><dd>{selectedCampaign.target}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
+        <section className="campaign-details-creators"><span className="eyebrow">CREATORS</span><div>{creatorImages.map((src, index) => <span key={src}><img src={src} alt="" /><strong>{['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]}</strong></span>)}</div></section>
+      </div>
+    </div> : null}
     {communitiesOpen ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="community-directory-title">
       <div className="modal-card community-directory-modal">
         <header><div><span className="eyebrow">ACTIVE COMMUNITIES</span><h2 id="community-directory-title">Madrid Philippines communities</h2></div><button className="icon-button" onClick={() => setCommunitiesOpen(false)} aria-label="Close communities">×</button></header>

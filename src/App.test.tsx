@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -15,22 +15,31 @@ describe('OkPo role workspaces', () => {
   it('renders the Brand command center and fixed-content campaign', () => {
     renderRoute('/brand')
     expect(screen.getByRole('heading', { name: /Good morning, Alexis/i })).toBeInTheDocument()
-    expect(screen.getByText('Views')).toBeInTheDocument()
-    expect(screen.getByText('Engagement')).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Internship Campaign' })).toBeInTheDocument()
-    expect(screen.getByText('Active communities')).toBeInTheDocument()
+    expect(screen.getByText('Activated communities')).toBeInTheDocument()
+    expect(screen.getByText('Creator roster')).toBeInTheDocument()
     expect(screen.getByText('FEATURED CAMPAIGNS')).toBeInTheDocument()
   })
 
   it('opens the active community directory', async () => {
     const user = userEvent.setup()
     renderRoute('/brand')
-    await user.click(screen.getByRole('button', { name: /Active communities/i }))
+    await user.click(screen.getByRole('button', { name: /Activated communities/i }))
     expect(screen.getByRole('heading', { name: 'Madrid Philippines communities' })).toBeInTheDocument()
     expect(screen.getByText('Madrid Performers')).toBeInTheDocument()
     expect(screen.getByText('Field Riders')).toBeInTheDocument()
+  })
+
+  it('opens featured campaign details', async () => {
+    const user = userEvent.setup()
+    renderRoute('/brand')
+    await user.click(screen.getByRole('button', { name: /Internship Campaign/i }))
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'Internship Campaign' })).toBeInTheDocument()
+    expect(within(dialog).getByText('Allocated budget')).toBeInTheDocument()
+    expect(within(dialog).getByText('Maya Reyes')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {
