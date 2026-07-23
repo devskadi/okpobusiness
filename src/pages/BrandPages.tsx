@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2,
-  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Package, Pencil, Plus, Send,
-  Sparkles, Target, Users, WalletCards,
+  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, MousePointerClick, Package,
+  Pencil, Percent, Plus, Send, Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -121,6 +121,7 @@ export function BrandDashboard() {
   const { state } = useApp()
   const [communitiesOpen, setCommunitiesOpen] = useState(false)
   const [selectedCampaign, setSelectedCampaign] = useState<FeaturedCampaign | null>(null)
+  const [goalExpanded, setGoalExpanded] = useState(false)
   const featuredCarouselRef = useRef<HTMLDivElement>(null)
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
   const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
@@ -170,7 +171,7 @@ export function BrandDashboard() {
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span></div>
       <div className="featured-campaign-carousel" ref={featuredCarouselRef} data-autoplay="3000">
-        {campaignImages.map((campaign) => <button className="featured-campaign-card" key={campaign.name} onClick={() => setSelectedCampaign(campaign)}>
+        {campaignImages.map((campaign) => <button className="featured-campaign-card" key={campaign.name} onClick={() => { setSelectedCampaign(campaign); setGoalExpanded(false) }}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
           <div className="featured-campaign-body">
             <h2>{campaign.name}</h2>
@@ -189,6 +190,15 @@ export function BrandDashboard() {
           <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
         </div>
       </article>
+      <section className="dashboard-analytics" aria-labelledby="dashboard-analytics-title">
+        <div className="dashboard-section-heading"><span className="eyebrow" id="dashboard-analytics-title">CAMPAIGN ANALYTICS</span></div>
+        <div className="metrics-grid metrics-grid-four dashboard-analytics-grid">
+          <MetricCard label="Impressions" value="6.8M" detail="Across campaign content" icon={Eye} />
+          <MetricCard label="Clicks" value="184.2K" detail="Tracked destination visits" icon={MousePointerClick} />
+          <MetricCard label="CTR" value="2.7%" detail="Clicks from impressions" icon={Percent} />
+          <MetricCard label="Engagement" value="296.3K" detail="Reactions, comments, and shares" icon={BarChart3} />
+        </div>
+      </section>
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
         <div className="metric-top"><span>Activated communities</span><i><Layers3 size={18} /></i></div>
         <div className="community-directory-preview">
@@ -200,10 +210,10 @@ export function BrandDashboard() {
     {selectedCampaign ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="campaign-details-title">
       <div className="modal-card campaign-details-modal">
         <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>
-        <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p>{selectedCampaign.goal}</p></div></div>
-        <dl className="campaign-details-metrics"><div><dt>Spent / allocated</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))} <span>/ {formatCurrency(selectedCampaign.budget)}</span></dd></div><div><dt>Content target</dt><dd>{selectedCampaign.target}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
+        <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p className={goalExpanded ? 'is-expanded' : ''}>{selectedCampaign.goal}</p>{selectedCampaign.goal.length > 140 ? <button className="campaign-goal-toggle" onClick={() => setGoalExpanded((expanded) => !expanded)}>{goalExpanded ? 'See less' : 'See more'}</button> : null}</div></div>
+        <dl className="campaign-details-metrics"><div><dt>Spent / allocated</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))} <span>/ {formatCurrency(selectedCampaign.budget)}</span></dd></div><div><dt>Published / target</dt><dd>{Math.round(selectedCampaign.target * .62)} <span>/ {selectedCampaign.target}</span></dd></div><div><dt>Remaining / total duration</dt><dd>{Math.max(1, Math.round(selectedCampaign.weeks * .38))} <span>/ {selectedCampaign.weeks} weeks</span></dd></div></dl>
         <section className="campaign-details-creators"><div><span className="eyebrow">PARTICIPATING CREATORS</span><p>54 creators across 4 activated communities</p></div><div className="campaign-creator-stack">{creatorImages.map((src, index) => <img src={src} alt="" title={['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]} key={src} />)}<span>+50</span></div></section>
-        <section className="campaign-top-content"><span className="eyebrow">TOP CONTENT</span><div>{campaignImages.filter((campaign) => campaign.name !== selectedCampaign.name).slice(0, 3).map((campaign, index) => <article key={campaign.name}><img src={campaign.src} alt="" /><span>{[48.2, 36.7, 29.4][index]}K views</span></article>)}</div></section>
+        <section className="campaign-top-content"><span className="eyebrow">TOP CONTENT</span><div aria-label="Top campaign content">{Array.from({ length: 10 }, (_, index) => { const available = campaignImages.filter((campaign) => campaign.name !== selectedCampaign.name); const campaign = available[index % available.length]; return <article key={`${campaign.name}-${index}`}><img src={campaign.src} alt="" /><span>{[48.2, 36.7, 29.4, 26.8, 24.1, 21.7, 19.9, 18.4, 16.8, 15.3][index]}K views</span></article> })}</div></section>
       </div>
     </div> : null}
     {communitiesOpen ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="community-directory-title">
