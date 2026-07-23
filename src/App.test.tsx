@@ -19,7 +19,7 @@ describe('OkPo role workspaces', () => {
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Solutions Job Fair' })).toBeInTheDocument()
     expect(screen.getByText('Activated communities')).toBeInTheDocument()
-    expect(screen.getByText('Creator roster')).toBeInTheDocument()
+    expect(screen.queryByText('Creator roster')).not.toBeInTheDocument()
     expect(screen.getByText('FEATURED CAMPAIGNS')).toBeInTheDocument()
   })
 
@@ -45,7 +45,7 @@ describe('OkPo role workspaces', () => {
 
   it('renders the complete Brand opportunity wizard directly', () => {
     renderRoute('/brand/opportunities/new')
-    expect(screen.getByRole('heading', { name: 'Opportunity' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Campaign' })).toBeInTheDocument()
     expect(screen.getByText('Timing')).toBeInTheDocument()
     expect(screen.getByText('Review')).toBeInTheDocument()
   })
@@ -69,7 +69,7 @@ describe('OkPo role workspaces', () => {
 
   it('groups Brand content by campaign', () => {
     renderRoute('/brand/content')
-    expect(screen.getByRole('heading', { name: 'Content by opportunity' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Content by campaign' })).toBeInTheDocument()
     expect(screen.getByText('Real Skin, Real Routine')).toBeInTheDocument()
     expect(screen.getByText('Hydration, Your Way')).toBeInTheDocument()
   })

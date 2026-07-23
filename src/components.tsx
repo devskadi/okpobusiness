@@ -56,7 +56,7 @@ export function InfoToast({ title, children }: { title: string; children: ReactN
 }
 
 export function OpportunityCard({ id, name, product, platform, status, content, budget, dates, progress, to }: { id: string; name: string; product: string; platform: string; status: OpportunityStatus; content: string; budget: string; dates: string; progress?: number; to: string }) {
-  return <Link className="opportunity-card" to={to} data-opportunity-id={id}><div className="opportunity-card-top"><span className="campaign-mark">OP</span><StatusBadge status={status} /></div><div><span className="overline">{platform}</span><h3>{name}</h3><p>{product}</p></div><dl><div><dt>Commitment</dt><dd>{content}</dd></div><div><dt>Budget</dt><dd>{budget}</dd></div><div><dt>Live period</dt><dd>{dates}</dd></div></dl>{progress !== undefined ? <ProgressBar value={progress} label="Counted completion" /> : null}<span className="card-link">Open workspace <ArrowUpRight size={15} /></span></Link>
+  return <Link className="opportunity-card" to={to} data-opportunity-id={id}><div className="opportunity-card-top"><span className="campaign-mark">CA</span><StatusBadge status={status} /></div><div><span className="overline">{platform}</span><h3>{name}</h3><p>{product}</p></div><dl><div><dt>Commitment</dt><dd>{content}</dd></div><div><dt>Budget</dt><dd>{budget}</dd></div><div><dt>Live period</dt><dd>{dates}</dd></div></dl>{progress !== undefined ? <ProgressBar value={progress} label="Counted completion" /> : null}<span className="card-link">Open workspace <ArrowUpRight size={15} /></span></Link>
 }
 
 export function SegmentedTabs({ tabs, active, onChange }: { tabs: { id: string; label: string; count?: number }[]; active: string; onChange: (id: string) => void }) {

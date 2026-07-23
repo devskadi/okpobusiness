@@ -28,6 +28,95 @@ type FeaturedCampaign = {
   goal: string
 }
 
+function useShowcaseLiquidity(baseValue: number) {
+  const [displayValue, setDisplayValue] = useState(baseValue)
+  const [motionState, setMotionState] = useState<'idle' | 'counting' | 'resetting'>('idle')
+  const valueRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    setDisplayValue(baseValue)
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const increments = [4200, 6900, 8800, 5300]
+    const timers = new Set<number>()
+    let incrementIndex = 0
+    let frame = 0
+    let visible = typeof IntersectionObserver === 'undefined'
+
+    const clearTimers = () => {
+      timers.forEach((timer) => window.clearTimeout(timer))
+      timers.clear()
+      window.cancelAnimationFrame(frame)
+    }
+
+    const later = (callback: () => void, delay: number) => {
+      const timer = window.setTimeout(() => {
+        timers.delete(timer)
+        callback()
+      }, delay)
+      timers.add(timer)
+    }
+
+    const scheduleCycle = (delay = 5200) => later(() => {
+      if (!visible) return
+      const startedAt = performance.now()
+      const increase = increments[incrementIndex % increments.length]
+      incrementIndex += 1
+      setMotionState('counting')
+
+      const tick = (now: number) => {
+        if (!visible) return
+        const progress = Math.min(1, (now - startedAt) / 1100)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setDisplayValue(baseValue + Math.round(increase * eased))
+        if (progress < 1) {
+          frame = window.requestAnimationFrame(tick)
+          return
+        }
+
+        setMotionState('idle')
+        later(() => {
+          setMotionState('resetting')
+          later(() => setDisplayValue(baseValue), 150)
+          later(() => {
+            setMotionState('idle')
+            scheduleCycle()
+          }, 340)
+        }, 1600)
+      }
+
+      frame = window.requestAnimationFrame(tick)
+    }, delay)
+
+    let observer: IntersectionObserver | undefined
+    if (typeof IntersectionObserver !== 'undefined' && valueRef.current) {
+      observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          if (!visible) {
+            visible = true
+            scheduleCycle(3200)
+          }
+          return
+        }
+        visible = false
+        clearTimers()
+        setDisplayValue(baseValue)
+        setMotionState('idle')
+      }, { threshold: 0.25 })
+      observer.observe(valueRef.current)
+    } else {
+      scheduleCycle(4200)
+    }
+
+    return () => {
+      observer?.disconnect()
+      clearTimers()
+    }
+  }, [baseValue])
+
+  return { displayValue, motionState, valueRef }
+}
+
 export function BrandDashboard() {
   const { state } = useApp()
   const [communitiesOpen, setCommunitiesOpen] = useState(false)
@@ -36,13 +125,14 @@ export function BrandDashboard() {
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
   const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
   const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
+  const liquidityShowcase = useShowcaseLiquidity(liquidity)
   const campaignImages: FeaturedCampaign[] = [
-    { name: 'Solutions Job Fair', src: '/assets/campaign-solutions-job-fair.png', budget: 150000, target: 300, weeks: 8, goal: 'Drive qualified applicants to the Solutions Job Fair through creator-led career content.' },
-    { name: 'Field Rider Cebu', src: '/assets/campaign-field-rider-cebu.png', budget: 90000, target: 180, weeks: 6, goal: 'Recruit field riders in Cebu through trusted local creator communities.' },
-    { name: 'PITX Onsite Job Fair', src: '/assets/campaign-pitx-job-fair.png', budget: 120000, target: 150, weeks: 5, goal: 'Generate awareness and registrations for the PITX onsite recruitment event.' },
-    { name: 'Makati Hiring', src: '/assets/campaign-makati-hiring.png', budget: 80000, target: 120, weeks: 4, goal: 'Reach call center candidates near Makati through location-relevant creator content.' },
-    { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations.' },
-    { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, goal: 'Invite technology professionals and creators to KCP Networking Night.' },
+    { name: 'Solutions Job Fair', src: '/assets/campaign-solutions-job-fair.png', budget: 150000, target: 300, weeks: 8, goal: 'Drive qualified applicants to the Solutions Job Fair through creator-led career content. Prioritize practical application guidance, local event awareness, and clear calls to register or attend.' },
+    { name: 'Field Rider Cebu', src: '/assets/campaign-field-rider-cebu.png', budget: 90000, target: 180, weeks: 6, goal: 'Recruit field riders in Cebu through trusted local creator communities. Content should make the role feel accessible, explain where and when to apply, and encourage qualified candidates to register for the onsite job fair.' },
+    { name: 'PITX Onsite Job Fair', src: '/assets/campaign-pitx-job-fair.png', budget: 120000, target: 150, weeks: 5, goal: 'Generate awareness and registrations for the PITX onsite recruitment event. Use relatable creator stories to clarify the available role, event schedule, location, and next step for interested applicants.' },
+    { name: 'Makati Hiring', src: '/assets/campaign-makati-hiring.png', budget: 80000, target: 120, weeks: 4, goal: 'Reach call center candidates near Makati through location-relevant creator content. Emphasize Tagalog account opportunities, the accessible onsite process, and a direct invitation to register before the event.' },
+    { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations. Show the use case in a simple, credible way and guide viewers toward the intended action without making financial guarantees.' },
+    { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, goal: 'Invite technology professionals and creators to KCP Networking Night. Position the event as a focused opportunity to meet peers, exchange ideas, and build useful professional connections.' },
   ]
   const communityImages = [
     { name: 'Madrid Performers', src: '/assets/campaign-internship.png' },
@@ -78,7 +168,7 @@ export function BrandDashboard() {
   return <div className="page-stack">
     <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New campaign</span></Link>
     <section className="featured-campaigns">
-      <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span><span>{campaignImages.length} active</span></div>
+      <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span></div>
       <div className="featured-campaign-carousel" ref={featuredCarouselRef} data-autoplay="3000">
         {campaignImages.map((campaign) => <button className="featured-campaign-card" key={campaign.name} onClick={() => setSelectedCampaign(campaign)}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
@@ -95,8 +185,8 @@ export function BrandDashboard() {
       <article className="metric-card pool-card finance-primary gpv-primary">
         <div className="metric-top"><span>Pool</span><i><WalletCards size={18} /></i></div>
         <div className="pool-card-values">
-          <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong><small>{postedOpportunities.length} posted opportunities</small></div>
-          <div><span>Liquidity</span><strong>{formatCurrency(liquidity)}</strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
+          <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong><small>{postedOpportunities.length} posted campaigns</small></div>
+          <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
         </div>
       </article>
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
@@ -106,20 +196,13 @@ export function BrandDashboard() {
           <span>View communities <ArrowRight size={15} /></span>
         </div>
       </button>
-      <article className="metric-card creator-roster-card">
-        <div className="metric-top"><span>Creator roster</span><i><Users size={18} /></i></div>
-        <div className="community-directory-preview">
-          <span className="product-avatar-stack image-avatar-stack">{creatorImages.map((src) => <i key={src}><img src={src} alt="" /></i>)}</span>
-          <span>Currently engaged</span>
-        </div>
-      </article>
     </section>
     {selectedCampaign ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="campaign-details-title">
       <div className="modal-card campaign-details-modal">
         <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>
         <div className="campaign-details-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p>{selectedCampaign.goal}</p></div></div>
         <dl className="campaign-details-metrics"><div><dt>Spent / allocated</dt><dd>{formatCurrency(Math.round(selectedCampaign.budget * .62))} <span>/ {formatCurrency(selectedCampaign.budget)}</span></dd></div><div><dt>Content target</dt><dd>{selectedCampaign.target}</dd></div><div><dt>Duration</dt><dd>{selectedCampaign.weeks} weeks</dd></div></dl>
-        <section className="campaign-details-creators"><span className="eyebrow">CREATORS</span><div className="campaign-creator-stack">{creatorImages.map((src, index) => <img src={src} alt="" title={['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]} key={src} />)}<span>+50</span></div></section>
+        <section className="campaign-details-creators"><div><span className="eyebrow">PARTICIPATING CREATORS</span><p>54 creators across 4 activated communities</p></div><div className="campaign-creator-stack">{creatorImages.map((src, index) => <img src={src} alt="" title={['Maya Reyes', 'Jules Aquino', 'Niko Santos', 'Camille Navarro'][index]} key={src} />)}<span>+50</span></div></section>
         <section className="campaign-top-content"><span className="eyebrow">TOP CONTENT</span><div>{campaignImages.filter((campaign) => campaign.name !== selectedCampaign.name).slice(0, 3).map((campaign, index) => <article key={campaign.name}><img src={campaign.src} alt="" /><span>{[48.2, 36.7, 29.4][index]}K views</span></article>)}</div></section>
       </div>
     </div> : null}
@@ -147,7 +230,7 @@ export function BrandProducts() {
     setEditing(null)
   }
   return <div className="page-stack">
-    <PageHeader eyebrow="PRODUCTS" title="Products" description="Reusable details for every opportunity." actions={<button className="button button-primary" onClick={() => setEditing(blank())}><Plus size={16} />Add product</button>} />
+    <PageHeader eyebrow="PRODUCTS" title="Products" description="Reusable details for every campaign." actions={<button className="button button-primary" onClick={() => setEditing(blank())}><Plus size={16} />Add product</button>} />
     <div className="product-grid">{state.products.map((product) => <article className="product-card" key={product.id}><div className="product-art"><span>DR</span><Package size={34} /></div><div className="product-card-body"><div><span className="overline">{product.category}</span><h2>{product.name}</h2></div><p>{product.description}</p><div className="tag-row">{product.keyBenefits.slice(0, 3).map((item) => <span key={item}>{item}</span>)}</div><footer><span className="status-badge status-active"><i />Active</span><button className="button button-secondary button-small" onClick={() => setEditing(product)}><Pencil size={14} />Edit</button></footer></div></article>)}</div>
     {editing ? <div className="modal-backdrop"><form className="modal-card form-modal" onSubmit={save}><header><div><span className="eyebrow">PRODUCT</span><h2>{state.products.some((item) => item.id === editing.id) ? 'Edit product' : 'Add product'}</h2></div><button type="button" className="icon-button" onClick={() => setEditing(null)}>×</button></header><div className="form-grid form-grid-two"><label className="field full"><span>Product name</span><input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label><label className="field"><span>Category</span><input value={editing.category} onChange={(event) => setEditing({ ...editing, category: event.target.value })} /></label><label className="field full"><span>Description</span><textarea rows={3} value={editing.description} onChange={(event) => setEditing({ ...editing, description: event.target.value })} /></label><label className="field full"><span>Key benefits</span><input value={editing.keyBenefits.join(', ')} onChange={(event) => setEditing({ ...editing, keyBenefits: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /><small>Separate with commas.</small></label></div><footer><button type="button" className="button button-secondary" onClick={() => setEditing(null)}>Cancel</button><button className="button button-primary">Save product</button></footer></form></div> : null}
   </div>
@@ -181,13 +264,13 @@ export function BrandNewOpportunity() {
   function finish(mode: 'draft' | 'post') { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step: 4 } }); dispatch({ type: 'CREATE_OPPORTUNITY', mode }); navigate('/brand/opportunities') }
   const product = state.products.find((item) => item.id === draft.productId)
   return <div className="wizard-page">
-    <header className="wizard-top"><Link to="/brand/opportunities"><ArrowLeft size={16} />Opportunities</Link><div><span>New opportunity</span><strong>{draft.name || 'Untitled opportunity'}</strong></div><button className="button button-ghost" onClick={() => { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step } }); navigate('/brand/opportunities') }}>Save & exit</button></header>
+    <header className="wizard-top"><Link to="/brand/opportunities"><ArrowLeft size={16} />Campaigns</Link><div><span>New campaign</span><strong>{draft.name || 'Untitled campaign'}</strong></div><button className="button button-ghost" onClick={() => { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step } }); navigate('/brand/opportunities') }}>Save & exit</button></header>
     <div className="wizard-stepper">{wizardSteps.map((label, index) => <button key={label} className={step === index + 1 ? 'active' : step > index + 1 ? 'complete' : ''} onClick={() => go(index + 1)}><span>{step > index + 1 ? <Check size={13} /> : index + 1}</span><small>{label}</small></button>)}</div>
     <main className="wizard-body">
-      {step === 1 ? <WizardSection number="01" title="Opportunity" description="What are you posting?"><div className="form-grid form-grid-two"><label className="field full"><span>Opportunity name</span><input aria-label="Opportunity name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Leaders claim a fixed share after you post.</InfoToast></WizardSection> : null}
+      {step === 1 ? <WizardSection number="01" title="Campaign" description="What are you launching?"><div className="form-grid form-grid-two"><label className="field full"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Community Leaders claim an allocation, then create promotions for their members.</InfoToast></WizardSection> : null}
       {step === 2 ? <WizardSection number="02" title="Timing and pool" description="Set dates, output, and pool."><div className="form-grid form-grid-two"><label className="field"><span>Preparation starts</span><input aria-label="Preparation starts" type="date" value={draft.preparationStart} onChange={(event) => updatePeriod('preparation', { start: event.target.value })} /></label><label className="field"><span>Preparation days</span><div className="input-suffix"><input aria-label="Preparation days" type="number" min="1" value={draft.preparationDays} onChange={(event) => updatePeriod('preparation', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.preparationEnd)}</small></label><label className="field"><span>Publishing starts</span><input aria-label="Publishing starts" type="date" value={draft.liveStart} onChange={(event) => updatePeriod('live', { start: event.target.value })} /></label><label className="field"><span>Publishing days</span><div className="input-suffix"><input aria-label="Publishing days" type="number" min="1" value={draft.liveDays} onChange={(event) => updatePeriod('live', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.liveEnd)}</small></label><label className="field"><span>Content target</span><div className="input-suffix"><input aria-label="Content target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><label className="field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
       {step === 3 ? <WizardSection number="03" title="Creator brief" description="Give creators only what they need."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
-      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">OPPORTUNITY</span><h2>{draft.name || 'Untitled opportunity'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><CalendarDays size={18} /><div><span>Preparation</span><strong>{formatDate(draft.preparationStart)} – {formatDate(draft.preparationEnd)}</strong><small>{draft.preparationDays} days</small></div></section><section><Clock3 size={18} /><div><span>Publishing</span><strong>{formatDate(draft.liveStart)} – {formatDate(draft.liveEnd)}</strong><small>{draft.liveDays} days</small></div></section><section><Target size={18} /><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><WalletCards size={18} /><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
+      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><CalendarDays size={18} /><div><span>Preparation</span><strong>{formatDate(draft.preparationStart)} – {formatDate(draft.preparationEnd)}</strong><small>{draft.preparationDays} days</small></div></section><section><Clock3 size={18} /><div><span>Publishing</span><strong>{formatDate(draft.liveStart)} – {formatDate(draft.liveEnd)}</strong><small>{draft.liveDays} days</small></div></section><section><Target size={18} /><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><WalletCards size={18} /><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
       <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < 4 ? <button className="button button-primary" onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
     </main>
   </div>
@@ -203,8 +286,8 @@ export function BrandOpportunities() {
   const filters = ['all', 'Draft', 'Open', 'Partially Claimed', 'Live', 'Completed']
   const visible = filter === 'all' ? state.opportunities : state.opportunities.filter((item) => item.status === filter)
   return <div className="page-stack">
-    <PageHeader eyebrow="CAMPAIGN OPPORTUNITIES" title="Content commitments, from post to completion" description="Post fixed opportunities and let verified communities claim their automatic share." actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New opportunity</Link>} />
-    <label className="opportunity-filter-mobile"><span>Show</span><select aria-label="Filter opportunities" value={filter} onChange={(event) => setFilter(event.target.value)}>{filters.map((item) => <option key={item} value={item}>{item === 'all' ? 'All opportunities' : item} ({item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length})</option>)}</select></label>
+    <PageHeader eyebrow="CAMPAIGNS" title="Campaigns, from launch to completion" description="Post fixed campaigns for verified communities to activate." actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New campaign</Link>} />
+    <label className="opportunity-filter-mobile"><span>Show</span><select aria-label="Filter campaigns" value={filter} onChange={(event) => setFilter(event.target.value)}>{filters.map((item) => <option key={item} value={item}>{item === 'all' ? 'All campaigns' : item} ({item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length})</option>)}</select></label>
     <div className="filter-tabs opportunity-filter-tabs">{filters.map((item) => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item === 'all' ? 'All' : item}<span>{item === 'all' ? state.opportunities.length : state.opportunities.filter((opportunity) => opportunity.status === item).length}</span></button>)}</div>
     <div className="opportunity-grid">{visible.map((opportunity) => {
       const product = state.products.find((item) => item.id === opportunity.productId)
@@ -240,7 +323,7 @@ export function BrandOpportunityWorkspace() {
   const [params, setParams] = useSearchParams()
   const opportunity = getOpportunity(opportunityId)
   const tab = params.get('tab') ?? 'overview'
-  if (!opportunity) return <EmptyState title="Opportunity not found" description="Return to the campaign opportunity portfolio." action={<Link className="button button-primary" to="/brand/opportunities">View opportunities</Link>} />
+  if (!opportunity) return <EmptyState title="Campaign not found" description="Return to the campaign portfolio." action={<Link className="button button-primary" to="/brand/opportunities">View campaigns</Link>} />
   const product = state.products.find((item) => item.id === opportunity.productId)
   const metrics = getOpportunityMetrics(state, opportunity.id)
   const claims = state.claims.filter((item) => item.opportunityId === opportunity.id)
@@ -251,8 +334,8 @@ export function BrandOpportunityWorkspace() {
   const creatorsActivated = new Set(state.assignments.filter((item) => relatedCampaignIds.has(item.communityCampaignId) && state.members.find((member) => member.id === item.memberId)?.active).map((item) => item.memberId)).size
   const tabs = [{ id: 'overview', label: 'Overview' }, { id: 'communities', label: 'Communities', count: claims.length }, { id: 'content', label: 'Content', count: metrics.recorded }, { id: 'report', label: 'Completion report' }]
   return <div className="page-stack workspace-page">
-    <Link className="back-link" to="/brand/opportunities"><ArrowLeft size={15} />Campaign opportunities</Link>
-    <header className="workspace-header"><div className="workspace-mark">DR</div><div><div className="workspace-title-line"><h1>{opportunity.name}</h1><StatusBadge status={opportunity.status} /></div><p>{product?.name} · {opportunity.platform}</p><span>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</span></div><div className="workspace-actions">{opportunity.status === 'Draft' ? <button className="button button-primary" onClick={() => dispatch({ type: 'POST_OPPORTUNITY', opportunityId: opportunity.id })}><Send size={16} />Post opportunity</button> : <span className="fixed-pill"><FileCheck2 size={15} />Fixed campaign terms</span>}</div></header>
+    <Link className="back-link" to="/brand/opportunities"><ArrowLeft size={15} />Campaigns</Link>
+    <header className="workspace-header"><div className="workspace-mark">DR</div><div><div className="workspace-title-line"><h1>{opportunity.name}</h1><StatusBadge status={opportunity.status} /></div><p>{product?.name} · {opportunity.platform}</p><span>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</span></div><div className="workspace-actions">{opportunity.status === 'Draft' ? <button className="button button-primary" onClick={() => dispatch({ type: 'POST_OPPORTUNITY', opportunityId: opportunity.id })}><Send size={16} />Post campaign</button> : <span className="fixed-pill"><FileCheck2 size={15} />Fixed campaign terms</span>}</div></header>
     <SegmentedTabs tabs={tabs} active={tab} onChange={(id) => setParams({ tab: id })} />
 
     {tab === 'overview' ? <div className="tab-stack">
@@ -262,7 +345,7 @@ export function BrandOpportunityWorkspace() {
       <Panel title="Supporting reach" description="Views and engagement are context—not guaranteed campaign outcomes."><div className="supporting-metrics"><div><Eye size={18} /><span>Available views</span><strong>{formatNumber(opportunity.secondaryViews)}</strong></div><div><BarChart3 size={18} /><span>Available engagement</span><strong>{formatNumber(opportunity.secondaryEngagement)}</strong></div></div></Panel>
     </div> : null}
 
-    {tab === 'communities' ? <div className="tab-stack"><Callout title="No Brand approval or allocation controls">Community allocations are created by the system from verified size and remaining capacity. They are immediately confirmed and cannot be negotiated.</Callout><Panel title="Participating communities" description={`${metrics.allocated} of ${metrics.required} contents allocated across ${claims.length} communities.`}><div className="table-wrap"><table><thead><tr><th>Community</th><th>Verified size</th><th>Leader</th><th>Content quota</th><th>Budget allocation</th><th>Counted</th><th>Completion</th></tr></thead><tbody>{claims.map((claim) => { const community = state.communities.find((item) => item.id === claim.communityId)!; const content = relatedContent.filter((item) => item.communityCampaignId && state.communityCampaigns.find((cc) => cc.id === item.communityCampaignId)?.communityId === community.id); const counted = content.filter((item) => item.status === 'Counted').length; return <tr key={claim.id}><td><div className="person-cell"><Avatar initials={community.initials} tone="cream" /><span><strong>{community.name}</strong><small>{community.location}</small></span></div></td><td>{community.verifiedSize}</td><td>{community.leaderName}<small className="table-subline">{community.leaderType}</small></td><td><strong>{claim.contentQuota}</strong></td><td>{formatCurrency(claim.budgetAllocation)}</td><td>{counted}</td><td><div className="table-progress"><ProgressBar value={Math.round(counted / claim.contentQuota * 100)} /><span>{Math.round(counted / claim.contentQuota * 100)}%</span></div></td></tr> })}</tbody></table></div>{claims.length === 0 ? <EmptyState icon={Users} title="No claims yet" description="The opportunity is open. Verified Community Leaders can claim their automatic allocation." /> : null}</Panel></div> : null}
+    {tab === 'communities' ? <div className="tab-stack"><Callout title="No Brand approval or allocation controls">Community allocations are created by the system from verified size and remaining capacity. They are immediately confirmed and cannot be negotiated.</Callout><Panel title="Participating communities" description={`${metrics.allocated} of ${metrics.required} contents allocated across ${claims.length} communities.`}><div className="table-wrap"><table><thead><tr><th>Community</th><th>Verified size</th><th>Leader</th><th>Content quota</th><th>Budget allocation</th><th>Counted</th><th>Completion</th></tr></thead><tbody>{claims.map((claim) => { const community = state.communities.find((item) => item.id === claim.communityId)!; const content = relatedContent.filter((item) => item.communityCampaignId && state.communityCampaigns.find((cc) => cc.id === item.communityCampaignId)?.communityId === community.id); const counted = content.filter((item) => item.status === 'Counted').length; return <tr key={claim.id}><td><div className="person-cell"><Avatar initials={community.initials} tone="cream" /><span><strong>{community.name}</strong><small>{community.location}</small></span></div></td><td>{community.verifiedSize}</td><td>{community.leaderName}<small className="table-subline">{community.leaderType}</small></td><td><strong>{claim.contentQuota}</strong></td><td>{formatCurrency(claim.budgetAllocation)}</td><td>{counted}</td><td><div className="table-progress"><ProgressBar value={Math.round(counted / claim.contentQuota * 100)} /><span>{Math.round(counted / claim.contentQuota * 100)}%</span></div></td></tr> })}</tbody></table></div>{claims.length === 0 ? <EmptyState icon={Users} title="No claims yet" description="The campaign is open. Verified Community Leaders can claim their automatic allocation." /> : null}</Panel></div> : null}
 
     {tab === 'content' ? <BrandContentTable opportunityId={opportunity.id} /> : null}
     {tab === 'report' ? <CompletionReport opportunityId={opportunity.id} /> : null}
@@ -282,7 +365,7 @@ function BrandContentTable({ opportunityId, title = 'Consolidated campaign conte
   return <Panel title={title} description={description}>
     <div className="table-wrap content-table-desktop">
       <table>
-        <thead><tr><th>Creator</th><th>Community</th><th>Community campaign</th><th>Status</th><th>Published link</th><th>Views</th><th>Engagement</th></tr></thead>
+        <thead><tr><th>Creator</th><th>Community</th><th>Promotion</th><th>Status</th><th>Published link</th><th>Views</th><th>Engagement</th></tr></thead>
         <tbody>{contentRows.map(({ content, member, community, campaign }) => <tr key={content.id}>
           <td><div className="person-cell"><Avatar initials={member.initials} size="sm" /><span><strong>{member.name}</strong><small>{member.handle}</small></span></div></td>
           <td>{community.name}</td>
@@ -331,7 +414,7 @@ export function BrandContent() {
   const visibleStatuses = new Set(['Published', 'Recorded', 'Validated', 'Counted'])
   const opportunityIds = new Set(state.contents.filter((item) => visibleStatuses.has(item.status)).map((item) => item.opportunityId))
   const campaigns = state.opportunities.filter((item) => opportunityIds.has(item.id))
-  return <div className="page-stack"><PageHeader eyebrow="CONTENT" title="Content by opportunity" description="Published links and delivery status." /><div className="content-campaign-groups">{campaigns.map((campaign) => { const product = state.products.find((item) => item.id === campaign.productId); const metrics = getOpportunityMetrics(state, campaign.id); return <BrandContentTable key={campaign.id} opportunityId={campaign.id} title={campaign.name} description={`${product?.name ?? 'Product'} · ${metrics.recorded} recorded · ${metrics.counted} counted`} /> })}</div>{campaigns.length === 0 ? <EmptyState icon={Boxes} title="No content yet" description="Content appears after creators record published links." /> : null}</div>
+  return <div className="page-stack"><PageHeader eyebrow="CONTENT" title="Content by campaign" description="Published links and delivery status." /><div className="content-campaign-groups">{campaigns.map((campaign) => { const product = state.products.find((item) => item.id === campaign.productId); const metrics = getOpportunityMetrics(state, campaign.id); return <BrandContentTable key={campaign.id} opportunityId={campaign.id} title={campaign.name} description={`${product?.name ?? 'Product'} · ${metrics.recorded} recorded · ${metrics.counted} counted`} /> })}</div>{campaigns.length === 0 ? <EmptyState icon={Boxes} title="No content yet" description="Content appears after creators record published links." /> : null}</div>
 }
 
 export function BrandReports() {
@@ -345,5 +428,5 @@ export function BrandProfilePage() {
   const [brand, setBrand] = useState(state.brand)
   const [saved, setSaved] = useState(false)
   function submit(event: React.FormEvent) { event.preventDefault(); dispatch({ type: 'UPDATE_BRAND', brand }); setSaved(true) }
-  return <div className="page-stack settings-page"><PageHeader eyebrow="BRAND PROFILE" title="Your identity across OkPo" description="Community Leaders see this information when evaluating opportunities." /><form className="panel profile-form" onSubmit={submit}><div className="profile-identity"><Avatar initials={brand.initials} size="lg" tone="yellow" /><div><strong>{brand.name}</strong><span>Verified Brand</span></div></div><div className="form-grid form-grid-two"><label className="field"><span>Brand name</span><input value={brand.name} onChange={(event) => setBrand({ ...brand, name: event.target.value })} /></label><label className="field"><span>Website</span><input value={brand.website} onChange={(event) => setBrand({ ...brand, website: event.target.value })} /></label><label className="field"><span>Industry</span><input value={brand.industry} onChange={(event) => setBrand({ ...brand, industry: event.target.value })} /></label><label className="field"><span>Location</span><input value={brand.location} onChange={(event) => setBrand({ ...brand, location: event.target.value })} /></label><label className="field full"><span>Brand description</span><textarea rows={4} value={brand.description} onChange={(event) => setBrand({ ...brand, description: event.target.value })} /></label><label className="field"><span>Primary contact</span><input value={brand.contactName} onChange={(event) => setBrand({ ...brand, contactName: event.target.value })} /></label><label className="field"><span>Contact email</span><input type="email" value={brand.contactEmail} onChange={(event) => setBrand({ ...brand, contactEmail: event.target.value })} /></label></div><footer className="form-footer">{saved ? <span className="saved-message"><CheckCircle2 size={16} />Saved to this prototype</span> : <span />}<button className="button button-primary">Save brand profile</button></footer></form></div>
+  return <div className="page-stack settings-page"><PageHeader eyebrow="BRAND PROFILE" title="Your identity across OkPo" description="Community Leaders see this information when evaluating campaigns." /><form className="panel profile-form" onSubmit={submit}><div className="profile-identity"><Avatar initials={brand.initials} size="lg" tone="yellow" /><div><strong>{brand.name}</strong><span>Verified Brand</span></div></div><div className="form-grid form-grid-two"><label className="field"><span>Brand name</span><input value={brand.name} onChange={(event) => setBrand({ ...brand, name: event.target.value })} /></label><label className="field"><span>Website</span><input value={brand.website} onChange={(event) => setBrand({ ...brand, website: event.target.value })} /></label><label className="field"><span>Industry</span><input value={brand.industry} onChange={(event) => setBrand({ ...brand, industry: event.target.value })} /></label><label className="field"><span>Location</span><input value={brand.location} onChange={(event) => setBrand({ ...brand, location: event.target.value })} /></label><label className="field full"><span>Brand description</span><textarea rows={4} value={brand.description} onChange={(event) => setBrand({ ...brand, description: event.target.value })} /></label><label className="field"><span>Primary contact</span><input value={brand.contactName} onChange={(event) => setBrand({ ...brand, contactName: event.target.value })} /></label><label className="field"><span>Contact email</span><input type="email" value={brand.contactEmail} onChange={(event) => setBrand({ ...brand, contactEmail: event.target.value })} /></label></div><footer className="form-footer">{saved ? <span className="saved-message"><CheckCircle2 size={16} />Saved to this prototype</span> : <span />}<button className="button button-primary">Save brand profile</button></footer></form></div>
 }

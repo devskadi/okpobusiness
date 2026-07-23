@@ -112,7 +112,7 @@ test('Brand opportunities use an unclipped status dropdown on mobile', async ({ 
   await expect(summaries.first().locator('.opportunity-mobile-body')).toBeVisible()
   await expect(summaries.first()).toContainText('Pool value')
 
-  const filter = page.getByLabel('Filter opportunities')
+  const filter = page.getByLabel('Filter campaigns')
   await expect(filter).toBeVisible()
   await filter.selectOption('Draft')
   await expect(page.locator('.opportunity-card-mobile')).toHaveCount(1)

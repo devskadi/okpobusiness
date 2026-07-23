@@ -19,15 +19,15 @@ const navigation = {
   brand: [
     { to: '/brand', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/brand/products', label: 'Products', icon: Package },
-    { to: '/brand/opportunities', label: 'Opportunities', icon: FolderKanban },
+    { to: '/brand/opportunities', label: 'Campaigns', icon: FolderKanban },
     { to: '/brand/content', label: 'Content', icon: Boxes },
     { to: '/brand/reports', label: 'Reports', icon: BarChart3 },
     { to: '/brand/profile', label: 'Brand Profile', icon: Settings },
   ],
   leader: [
     { to: '/leader', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/leader/opportunities', label: 'Opportunities', icon: Library },
-    { to: '/leader/campaigns', label: 'My Community Campaigns', icon: FolderKanban },
+    { to: '/leader/opportunities', label: 'Brand Campaigns', icon: Library },
+    { to: '/leader/campaigns', label: 'My Promotions', icon: FolderKanban },
     { to: '/leader/members', label: 'Members', icon: UsersRound },
     { to: '/leader/content', label: 'Content Monitoring', icon: ClipboardCheck },
     { to: '/leader/budget', label: 'Budget', icon: CircleDollarSign },
@@ -35,7 +35,7 @@ const navigation = {
   ],
   member: [
     { to: '/member', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/member/campaigns', label: 'Campaigns', icon: FolderKanban },
+    { to: '/member/campaigns', label: 'Promotions', icon: FolderKanban },
     { to: '/member/content', label: 'My Content', icon: ScrollText },
     { to: '/member/rewards', label: 'Rewards', icon: CircleDollarSign },
     { to: '/member/profile', label: 'Profile', icon: UserCircle },
@@ -83,9 +83,6 @@ export function AppShell() {
         <span className="nav-label">{meta.short.toUpperCase()} WORKSPACE</span>
         {navigation[activeRole].map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} onClick={() => setMenuOpen(false)}><Icon size={18} /><span>{label}</span></NavLink>)}
       </nav>
-      <div className="sidebar-story">
-        <span>COMMUNITY-POWERED</span><strong>One pool.<br />Many communities.</strong><p>Track every commitment.</p>
-      </div>
       <div className="sidebar-bottom">
         <button className="reset-button" onClick={() => dispatch({ type: 'RESET_DEMO' })}><RotateCcw size={15} />Reset demo data</button>
         <div className="sidebar-user"><Avatar initials={meta.initials} size="sm" src="/assets/user-portrait.png" tone="black" /><span><strong>{meta.name}</strong><small>{meta.description}</small></span></div>
@@ -96,7 +93,7 @@ export function AppShell() {
       <header className="topbar">
         <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
         {isBrandDashboard
-          ? <div className="topbar-context brand-topbar-context"><img src="/assets/madrid-philippines.svg" alt="Madrid Philippines" /><h1>Good morning, Alexis</h1></div>
+          ? <div className="topbar-context brand-topbar-context"><img src="https://framerusercontent.com/images/9vztxpI94HrnaoU9MkMpqefg0o.png" alt="Madrid Philippines" /><h1>Good morning, Alexis</h1></div>
           : <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>}
         <div className="topbar-actions">
           <button className="icon-button notification-button" aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}><Bell size={18} />{notices.some((item) => !item.read) ? <i /> : null}</button>
