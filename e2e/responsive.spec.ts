@@ -119,6 +119,25 @@ test('Brand opportunities use an unclipped status dropdown on mobile', async ({ 
   await expect(page.locator('.opportunity-card-mobile')).toContainText('Night Routine Notes')
 })
 
+test('Featured campaigns remain swipeable and auto-advance on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/brand')
+
+  const carousel = page.locator('.featured-campaign-carousel')
+  await expect(carousel).toBeVisible()
+  const initial = await carousel.evaluate((element) => ({
+    left: element.scrollLeft,
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }))
+  expect(initial.scrollWidth).toBeGreaterThan(initial.clientWidth)
+
+  await expect.poll(
+    () => carousel.evaluate((element) => element.scrollLeft),
+    { timeout: 4500 },
+  ).toBeGreaterThan(initial.left + 1)
+})
+
 for (const width of [700, 701, 900, 901]) {
   test(`critical layouts remain stable at the ${width}px breakpoint edge`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })

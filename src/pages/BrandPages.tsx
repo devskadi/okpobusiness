@@ -29,6 +29,73 @@ type FeaturedCampaign = {
   goal: string
 }
 
+function useMobileAutoCarousel(itemCount: number) {
+  const carouselRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const carousel = carouselRef.current
+    if (!carousel || itemCount < 2 || typeof window.matchMedia !== 'function') return
+
+    const mobile = window.matchMedia('(max-width: 700px)')
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let timer = 0
+    let visible = true
+
+    const stop = () => window.clearTimeout(timer)
+    const advance = () => {
+      if (!mobile.matches || reducedMotion.matches || !visible || document.hidden) return
+      const cards = Array.from(carousel.querySelectorAll<HTMLElement>('.featured-campaign-card'))
+      if (cards.length < 2) return
+      const firstOffset = cards[0].offsetLeft
+      const currentIndex = cards.reduce((closest, card, index) => (
+        Math.abs(card.offsetLeft - firstOffset - carousel.scrollLeft) < Math.abs(cards[closest].offsetLeft - firstOffset - carousel.scrollLeft) ? index : closest
+      ), 0)
+      const nextCard = cards[(currentIndex + 1) % cards.length]
+      carousel.scrollTo({ left: nextCard.offsetLeft - firstOffset, behavior: 'smooth' })
+    }
+    const schedule = (delay = 3000) => {
+      stop()
+      if (!mobile.matches || reducedMotion.matches || !visible || document.hidden) return
+      timer = window.setTimeout(() => {
+        advance()
+        schedule()
+      }, delay)
+    }
+    const pauseForInteraction = () => stop()
+    const resumeAfterInteraction = () => schedule(1000)
+    const sync = () => schedule()
+
+    carousel.addEventListener('pointerdown', pauseForInteraction, { passive: true })
+    carousel.addEventListener('pointerup', resumeAfterInteraction, { passive: true })
+    carousel.addEventListener('pointercancel', resumeAfterInteraction, { passive: true })
+    carousel.addEventListener('wheel', resumeAfterInteraction, { passive: true })
+    mobile.addEventListener('change', sync)
+    reducedMotion.addEventListener('change', sync)
+    document.addEventListener('visibilitychange', sync)
+
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      sync()
+    }, { threshold: 0.25 })
+    observer?.observe(carousel)
+    schedule()
+
+    return () => {
+      stop()
+      observer?.disconnect()
+      carousel.removeEventListener('pointerdown', pauseForInteraction)
+      carousel.removeEventListener('pointerup', resumeAfterInteraction)
+      carousel.removeEventListener('pointercancel', resumeAfterInteraction)
+      carousel.removeEventListener('wheel', resumeAfterInteraction)
+      mobile.removeEventListener('change', sync)
+      reducedMotion.removeEventListener('change', sync)
+      document.removeEventListener('visibilitychange', sync)
+    }
+  }, [itemCount])
+
+  return carouselRef
+}
+
 function useShowcaseLiquidity(baseValue: number) {
   const [displayValue, setDisplayValue] = useState(baseValue)
   const [motionState, setMotionState] = useState<'idle' | 'counting' | 'resetting'>('idle')
@@ -135,6 +202,7 @@ export function BrandDashboard() {
     { name: 'Mag Cash Out Ka Na', src: '/assets/campaign-mag-cashout.png', budget: 180000, target: 220, weeks: 10, currentWeek: 6, goal: 'Build awareness and adoption for the cash-out offer through creator demonstrations. Show the use case in a simple, credible way and guide viewers toward the intended action without making financial guarantees.' },
     { name: 'KCP Networking Night', src: '/assets/campaign-kcp-networking.png', budget: 70000, target: 90, weeks: 3, currentWeek: 1, goal: 'Invite technology professionals and creators to KCP Networking Night. Position the event as a focused opportunity to meet peers, exchange ideas, and build useful professional connections.' },
   ]
+  const campaignCarouselRef = useMobileAutoCarousel(campaignImages.length)
   const communityImages = [
     { name: 'Madrid Performers', src: '/assets/campaign-internship.png' },
     { name: 'Field Riders', src: '/assets/campaign-tiko.jpeg' },
@@ -153,7 +221,7 @@ export function BrandDashboard() {
     <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New campaign</span></Link>
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span></div>
-      <div className="featured-campaign-carousel">
+      <div className="featured-campaign-carousel" ref={campaignCarouselRef}>
         {campaignImages.map((campaign) => <button className="featured-campaign-card" key={campaign.name} onClick={() => { setSelectedCampaign(campaign); setGoalExpanded(false) }}>
           <div className="featured-campaign-image"><img src={campaign.src} alt="" /></div>
           <div className="featured-campaign-body">
@@ -173,6 +241,21 @@ export function BrandDashboard() {
           <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
         </div>
       </article>
+      <section className="dashboard-promotions" aria-label="Active promotions">
+        <span className="eyebrow">PROMOTIONS</span>
+        <div className="dashboard-promotion-carousel">
+          {[
+            ['Cebu Rider Stories', 'Field Riders', campaignImages[1].src],
+            ['Job Fair Ready', 'Madrid Performers', campaignImages[0].src],
+            ['PITX Career Tips', 'Assessmate Mentors', campaignImages[2].src],
+            ['Makati Career Stories', 'Madrid Performers', campaignImages[3].src],
+          ].map(([name, community, src]) => <article key={name}>
+            <img src={src} alt="" />
+            <div><strong>{name}</strong><span>Led by {community}</span></div>
+            <StatusBadge status="Active" />
+          </article>)}
+        </div>
+      </section>
       <section className="dashboard-analytics" aria-label="Analytics">
         <div className="metrics-grid metrics-grid-four dashboard-analytics-grid">
           <MetricCard label="Impressions" value="6.8M" icon={Eye} />
@@ -188,6 +271,18 @@ export function BrandDashboard() {
           <span>View communities <ArrowRight size={15} /></span>
         </div>
       </button>
+      <section className="dashboard-top-content" aria-labelledby="dashboard-top-content-title">
+        <div><span className="eyebrow" id="dashboard-top-content-title">TOP PERFORMING CONTENT</span><span>10 posts</span></div>
+        <div>
+          {Array.from({ length: 10 }, (_, index) => {
+            const campaign = campaignImages[index % campaignImages.length]
+            return <article key={`${campaign.name}-dashboard-${index}`}>
+              <img src={campaign.src} alt="" />
+              <span>{[82.4, 74.8, 68.1, 61.9, 57.3, 52.6, 48.2, 43.7, 39.1, 34.8][index]}K views</span>
+            </article>
+          })}
+        </div>
+      </section>
     </section>
     {selectedCampaign ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="campaign-details-title">
       <div className="modal-card campaign-details-modal">
