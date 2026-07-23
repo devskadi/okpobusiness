@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2,
-  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, MousePointerClick, Package,
-  Pencil, Percent, Plus, Send, Sparkles, Target, Users, WalletCards,
+  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Package,
+  Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -218,7 +218,6 @@ export function BrandDashboard() {
   ]
 
   return <div className="page-stack">
-    <Link className="button button-primary floating-create-button" to="/brand/opportunities/new"><Plus size={18} /><span>New campaign</span></Link>
     <section className="featured-campaigns">
       <div className="featured-campaigns-heading"><span className="eyebrow">FEATURED CAMPAIGNS</span></div>
       <div className="featured-campaign-carousel" ref={campaignCarouselRef}>
@@ -252,16 +251,8 @@ export function BrandDashboard() {
           ].map(([name, community, src]) => <article key={name}>
             <img src={src} alt="" />
             <div><strong>{name}</strong><span>Led by {community}</span></div>
-            <StatusBadge status="Active" />
+            <span className="promotion-new-label">NEW</span>
           </article>)}
-        </div>
-      </section>
-      <section className="dashboard-analytics" aria-label="Analytics">
-        <div className="metrics-grid metrics-grid-four dashboard-analytics-grid">
-          <MetricCard label="Impressions" value="6.8M" icon={Eye} />
-          <MetricCard label="Clicks" value="184.2K" icon={MousePointerClick} />
-          <MetricCard label="CTR" value="2.7%" icon={Percent} />
-          <MetricCard label="Engagement" value="296.3K" icon={BarChart3} />
         </div>
       </section>
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
