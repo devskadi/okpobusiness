@@ -140,7 +140,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       const opportunityId = nowId('opportunity')
       const opportunity = {
         id: opportunityId,
-        name: draft.name || 'Untitled opportunity',
+        name: draft.name || 'Untitled campaign',
         productId: draft.productId,
         platform: draft.platform,
         objective: draft.objective,
@@ -166,14 +166,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         opportunities: [opportunity, ...state.opportunities],
         opportunityDraft: emptyOpportunityDraft,
-        activity: activity(state, { id: '', role: 'brand', title: action.mode === 'post' ? 'Opportunity posted' : 'Draft saved', detail: opportunity.name, timestamp: '', opportunityId }),
+        activity: activity(state, { id: '', role: 'brand', title: action.mode === 'post' ? 'Campaign posted' : 'Draft saved', detail: opportunity.name, timestamp: '', opportunityId }),
       }
     }
     case 'POST_OPPORTUNITY':
       return {
         ...state,
         opportunities: state.opportunities.map((item) => item.id === action.opportunityId && item.status === 'Draft' ? { ...item, status: 'Open', postedAt: 'Just now' } : item),
-        activity: activity(state, { id: '', role: 'brand', title: 'Opportunity posted', detail: 'Community Leaders can now claim an automatic allocation.', timestamp: '', opportunityId: action.opportunityId }),
+        activity: activity(state, { id: '', role: 'brand', title: 'Campaign posted', detail: 'Community Leaders can now claim an automatic allocation.', timestamp: '', opportunityId: action.opportunityId }),
       }
     case 'CLAIM_OPPORTUNITY': {
       const opportunity = state.opportunities.find((item) => item.id === action.opportunityId)
@@ -213,7 +213,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         preparation: { membersActivated: false, productAssignmentsReady: false, instructionsPublished: false, contentThemesPrepared: false, monitoringReady: false, readyToLaunch: false },
         createdAt: 'Today',
       }
-      return { ...state, communityCampaigns: [campaign, ...state.communityCampaigns], activity: activity(state, { id: '', role: 'leader', title: 'Community campaign created', detail: `${campaign.title} reserves ${campaign.contentQuota} contents and ${formatCurrency(campaign.rewardBudget)}.`, timestamp: '', opportunityId: campaign.opportunityId, communityCampaignId: campaign.id }) }
+      return { ...state, communityCampaigns: [campaign, ...state.communityCampaigns], activity: activity(state, { id: '', role: 'leader', title: 'Promotion created', detail: `${campaign.title} reserves ${campaign.contentQuota} contents and ${formatCurrency(campaign.rewardBudget)}.`, timestamp: '', opportunityId: campaign.opportunityId, communityCampaignId: campaign.id }) }
     }
     case 'ADVANCE_COMMUNITY_CAMPAIGN': {
       const target = state.communityCampaigns.find((item) => item.id === action.communityCampaignId)
@@ -221,7 +221,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       const index = statusOrder.indexOf(target.status)
       if (index < 0 || index === statusOrder.length - 1) return state
       const next = statusOrder[index + 1]
-      return { ...state, communityCampaigns: state.communityCampaigns.map((item) => item.id === target.id ? { ...item, status: next } : item), activity: activity(state, { id: '', role: 'leader', title: `Community campaign moved to ${next}`, detail: target.title, timestamp: '', opportunityId: target.opportunityId, communityCampaignId: target.id }) }
+      return { ...state, communityCampaigns: state.communityCampaigns.map((item) => item.id === target.id ? { ...item, status: next } : item), activity: activity(state, { id: '', role: 'leader', title: `Promotion moved to ${next}`, detail: target.title, timestamp: '', opportunityId: target.opportunityId, communityCampaignId: target.id }) }
     }
     case 'TOGGLE_PREPARATION': {
       return { ...state, communityCampaigns: state.communityCampaigns.map((item) => {

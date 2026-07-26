@@ -280,7 +280,7 @@ export const initialState: AppState = {
     { id: 'activity-1', role: 'leader', title: 'Content validated and counted', detail: 'SkinTok PH added 12 recorded posts to Real Skin, Real Routine.', timestamp: '12 min ago', opportunityId: 'opportunity-real-skin' },
     { id: 'activity-2', role: 'member', title: 'Published content recorded', detail: 'Maya Reyes recorded a TikTok link.', timestamp: '34 min ago', opportunityId: 'opportunity-real-skin' },
     { id: 'activity-3', role: 'system', title: 'Allocation created automatically', detail: 'SkinTok PH received 90 contents and ₱90,000 for Everyday Sun Defense.', timestamp: 'Yesterday', opportunityId: 'opportunity-daily-defense' },
-    { id: 'activity-4', role: 'brand', title: 'Opportunity posted', detail: 'Barrier Reset Week is open for community claims.', timestamp: 'Yesterday', opportunityId: 'opportunity-barrier-reset' },
+    { id: 'activity-4', role: 'brand', title: 'Campaign posted', detail: 'Barrier Reset Week is open for community claims.', timestamp: 'Yesterday', opportunityId: 'opportunity-barrier-reset' },
   ],
   notifications: [
     { id: 'note-brand-1', role: 'brand', title: 'Real Skin is 63% fulfilled', detail: '188 of 300 contents are counted.', time: '12 min ago', read: false },

@@ -60,10 +60,14 @@ test('shared navigation and dialogs remain usable on mobile', async ({ page }) =
   await page.goto('/brand')
 
   await page.getByRole('button', { name: 'Open navigation' }).click()
-  await expect(page.getByRole('navigation', { name: 'Brand Representative navigation' })).toBeVisible()
-  await page.getByRole('link', { name: 'Products' }).click()
-  await expect(page).toHaveURL(/\/brand\/products$/)
+  const navigation = page.getByRole('navigation', { name: 'Brand Representative navigation' })
+  await expect(navigation).toBeVisible()
+  await expect(navigation.getByRole('link', { name: 'Products' })).toHaveCount(0)
+  await expect(navigation.getByRole('link', { name: 'Content' })).toHaveCount(0)
+  await navigation.getByRole('link', { name: 'Campaigns' }).click()
+  await expect(page).toHaveURL(/\/brand\/opportunities$/)
 
+  await page.goto('/brand/products')
   await page.getByRole('button', { name: /Add product/ }).click()
   const dialog = page.locator('.modal-card')
   await expect(dialog).toBeVisible()
@@ -99,24 +103,31 @@ test('Brand content uses compact expandable items on mobile', async ({ page }) =
   await expect(firstItem).toContainText('Views')
 })
 
-test('Brand opportunities use an unclipped status dropdown on mobile', async ({ page }) => {
+test('Brand campaigns use Madrid data and compact current metrics on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 })
   await page.goto('/brand/opportunities')
 
-  await expect(page.locator('.opportunity-filter-tabs')).toBeHidden()
-  await expect(page.locator('.opportunity-card-desktop').first()).toBeHidden()
-  const summaries = page.locator('.opportunity-card-mobile')
-  await expect(summaries).toHaveCount(5)
-  await expect(summaries.first().locator('.opportunity-mobile-body')).toBeHidden()
-  await summaries.first().locator('summary').click()
-  await expect(summaries.first().locator('.opportunity-mobile-body')).toBeVisible()
-  await expect(summaries.first()).toContainText('Pool value')
+  const campaigns = page.locator('.campaign-portfolio-card')
+  await expect(campaigns).toHaveCount(6)
+  await expect(campaigns.first()).toContainText('Solutions Job Fair')
+  await expect(campaigns.first().locator('.campaign-portfolio-current')).toBeHidden()
 
-  const filter = page.getByLabel('Filter campaigns')
-  await expect(filter).toBeVisible()
-  await filter.selectOption('Draft')
-  await expect(page.locator('.opportunity-card-mobile')).toHaveCount(1)
-  await expect(page.locator('.opportunity-card-mobile')).toContainText('Night Routine Notes')
+  const thumbnail = campaigns.first().locator('summary > img')
+  const size = await thumbnail.evaluate((image) => ({
+    width: image.getBoundingClientRect().width,
+    height: image.getBoundingClientRect().height,
+  }))
+  expect(Math.abs(size.width - size.height)).toBeLessThanOrEqual(1)
+
+  await campaigns.first().locator('summary').click()
+  const current = campaigns.first().locator('.campaign-portfolio-current')
+  await expect(current).toBeVisible()
+  await expect(current).toContainText('Spent')
+  await expect(current).toContainText('₱93,000')
+  await expect(current).toContainText('Published')
+  await expect(current).toContainText('186')
+  await expect(current).toContainText('Current week')
+  await expect(campaigns.first()).not.toContainText('Open workspace')
 })
 
 test('Featured campaigns remain swipeable and auto-advance on mobile', async ({ page }) => {

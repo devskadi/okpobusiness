@@ -1,6 +1,6 @@
 import {
-  BarChart3, Bell, Boxes, ChevronDown, CircleDollarSign, ClipboardCheck, FolderKanban,
-  LayoutDashboard, Library, Menu, Package, RotateCcw, ScrollText, Settings, ShieldCheck, UserCircle,
+  BarChart3, Bell, ChevronDown, CircleDollarSign, ClipboardCheck, FolderKanban,
+  LayoutDashboard, Library, Menu, RotateCcw, ScrollText, Settings, ShieldCheck, UserCircle,
   UsersRound, X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -18,9 +18,7 @@ const roleMeta = {
 const navigation = {
   brand: [
     { to: '/brand', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/brand/products', label: 'Products', icon: Package },
     { to: '/brand/opportunities', label: 'Campaigns', icon: FolderKanban },
-    { to: '/brand/content', label: 'Content', icon: Boxes },
     { to: '/brand/reports', label: 'Reports', icon: BarChart3 },
     { to: '/brand/profile', label: 'Brand Profile', icon: Settings },
   ],
