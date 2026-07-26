@@ -11,7 +11,7 @@ import type { ProfileRole } from './types'
 
 const roleMeta = {
   brand: { label: 'Brand Representative', short: 'Brand', description: 'Dermorepubliq', initials: 'AT', name: 'Alexis Tan' },
-  leader: { label: 'Community Leader', short: 'Leader', description: 'SkinTok PH', initials: 'MV', name: 'Mara Villanueva' },
+  leader: { label: 'Community Manager', short: 'Manager', description: 'SkinTok PH', initials: 'MV', name: 'Mara Villanueva' },
   member: { label: 'Community Member', short: 'Member', description: 'SkinTok PH', initials: 'MR', name: 'Maya Reyes' },
 } satisfies Record<ProfileRole, { label: string; short: string; description: string; initials: string; name: string }>
 
@@ -26,9 +26,9 @@ const navigation = {
     { to: '/leader', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/leader/opportunities', label: 'Brand Campaigns', icon: Library },
     { to: '/leader/campaigns', label: 'My Promotions', icon: FolderKanban },
-    { to: '/leader/members', label: 'Members', icon: UsersRound },
+    { to: '/leader/members', label: 'My creators', icon: UsersRound },
     { to: '/leader/content', label: 'Content Monitoring', icon: ClipboardCheck },
-    { to: '/leader/budget', label: 'Budget', icon: CircleDollarSign },
+    { to: '/leader/budget', label: 'Earnings', icon: CircleDollarSign },
     { to: '/leader/community', label: 'Community Profile', icon: Settings },
   ],
   member: [

@@ -1,6 +1,6 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown,
-  Clock3, Eye, FileCheck2, FileText, Flag, Hash, Layers3, Package,
+  Clock3, Eye, FileCheck2, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
   Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -10,6 +10,7 @@ import {
   SegmentedTabs, StatusBadge,
 } from '../components'
 import { legacyDemoOpportunityIds, madridCampaigns, type MadridCampaign } from '../madridCampaigns'
+import { madridPromotions, type MadridPromotion } from '../madridPromotions'
 import { formatCurrency, formatDate, formatNumber, getCommunityCampaignMetrics, getOpportunityMetrics, useApp } from '../store'
 import type { OpportunityDraft, Product } from '../types'
 
@@ -287,11 +288,33 @@ export function BrandProducts() {
 
 const wizardSteps = ['Basics', 'Timing', 'Brief', 'Review']
 
-function endDateFromStart(start: string, durationDays: number) {
-  if (!start || durationDays < 1) return start
+function campaignEndFromMonths(start: string, months: number) {
+  if (!start || months < 1) return start
   const date = new Date(`${start}T00:00:00Z`)
-  date.setUTCDate(date.getUTCDate() + durationDays - 1)
+  date.setUTCMonth(date.getUTCMonth() + months)
+  date.setUTCDate(date.getUTCDate() - 1)
   return date.toISOString().slice(0, 10)
+}
+
+function durationMonths(days: number) {
+  return Math.min(12, Math.max(3, Math.round(days / 30) || 3))
+}
+
+function CampaignDurationCalendar({ start, months }: { start: string; months: number }) {
+  const startDate = new Date(`${start}T00:00:00Z`)
+  return <div className="campaign-duration-calendar" aria-label={`${months} month campaign calendar`}>
+    <div className="duration-calendar-heading"><CalendarDays size={20} /><div><strong>{months} month campaign</strong><small>{formatDate(start)} – {formatDate(campaignEndFromMonths(start, months))}</small></div></div>
+    <div className="duration-months">
+      {Array.from({ length: 12 }, (_, index) => {
+        const month = new Date(startDate)
+        month.setUTCMonth(month.getUTCMonth() + index)
+        return <span className={index < months ? 'selected' : ''} key={`${month.getUTCFullYear()}-${month.getUTCMonth()}`}>
+          <small>{month.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })}</small>
+          <strong>{month.getUTCFullYear()}</strong>
+        </span>
+      })}
+    </div>
+  </div>
 }
 
 export function BrandNewOpportunity() {
@@ -300,26 +323,31 @@ export function BrandNewOpportunity() {
   const [draft, setDraft] = useState<OpportunityDraft>(state.opportunityDraft)
   const [step, setStep] = useState(Math.max(1, state.opportunityDraft.step))
   function update(next: Partial<OpportunityDraft>) { setDraft((current) => ({ ...current, ...next })) }
-  function updatePeriod(period: 'preparation' | 'live', next: { start?: string; days?: number }) {
-    setDraft((current) => {
-      const start = next.start ?? (period === 'preparation' ? current.preparationStart : current.liveStart)
-      const days = next.days ?? (period === 'preparation' ? current.preparationDays : current.liveDays)
-      return period === 'preparation'
-        ? { ...current, preparationStart: start, preparationDays: days, preparationEnd: endDateFromStart(start, days) }
-        : { ...current, liveStart: start, liveDays: days, liveEnd: endDateFromStart(start, days) }
-    })
+  function updateCampaignMonths(value: number) {
+    const months = Math.min(12, Math.max(3, value || 3))
+    setDraft((current) => ({
+      ...current,
+      liveDays: months * 30,
+      liveEnd: campaignEndFromMonths(current.liveStart, months),
+    }))
   }
   function go(next: number) { const saved = { ...draft, step: next }; setDraft(saved); setStep(next); dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: saved }); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  function finish(mode: 'draft' | 'post') { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step: 4 } }); dispatch({ type: 'CREATE_OPPORTUNITY', mode }); navigate('/brand/opportunities') }
   const product = state.products.find((item) => item.id === draft.productId)
+  const campaignMonths = durationMonths(draft.liveDays)
+  const campaignEnd = campaignEndFromMonths(draft.liveStart, campaignMonths)
+  function finish(mode: 'draft' | 'post') {
+    dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, liveDays: campaignMonths * 30, liveEnd: campaignEnd, step: 4 } })
+    dispatch({ type: 'CREATE_OPPORTUNITY', mode })
+    navigate('/brand/opportunities')
+  }
   return <div className="wizard-page">
     <header className="wizard-top"><Link to="/brand/opportunities"><ArrowLeft size={16} />Campaigns</Link><div><span>New campaign</span><strong>{draft.name || 'Untitled campaign'}</strong></div><button className="button button-ghost" onClick={() => { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step } }); navigate('/brand/opportunities') }}>Save & exit</button></header>
     <div className="wizard-stepper">{wizardSteps.map((label, index) => <button key={label} className={step === index + 1 ? 'active' : step > index + 1 ? 'complete' : ''} onClick={() => go(index + 1)}><span>{step > index + 1 ? <Check size={13} /> : index + 1}</span><small>{label}</small></button>)}</div>
     <main className="wizard-body">
-      {step === 1 ? <WizardSection number="01" title="Campaign" description="What are you launching?"><div className="form-grid form-grid-two"><label className="field full"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Community Leaders claim an allocation, then create promotions for their members.</InfoToast></WizardSection> : null}
-      {step === 2 ? <WizardSection number="02" title="Timing and pool" description="Set dates, output, and pool."><div className="form-grid form-grid-two"><label className="field"><span>Preparation starts</span><input aria-label="Preparation starts" type="date" value={draft.preparationStart} onChange={(event) => updatePeriod('preparation', { start: event.target.value })} /></label><label className="field"><span>Preparation days</span><div className="input-suffix"><input aria-label="Preparation days" type="number" min="1" value={draft.preparationDays} onChange={(event) => updatePeriod('preparation', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.preparationEnd)}</small></label><label className="field"><span>Publishing starts</span><input aria-label="Publishing starts" type="date" value={draft.liveStart} onChange={(event) => updatePeriod('live', { start: event.target.value })} /></label><label className="field"><span>Publishing days</span><div className="input-suffix"><input aria-label="Publishing days" type="number" min="1" value={draft.liveDays} onChange={(event) => updatePeriod('live', { days: Number(event.target.value) })} /><span>days</span></div><small>Ends {formatDate(draft.liveEnd)}</small></label><label className="field"><span>Content target</span><div className="input-suffix"><input aria-label="Content target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><label className="field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
-      {step === 3 ? <WizardSection number="03" title="Campaign brief" description="Set the direction Community Leaders will use for promotions."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
-      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><CalendarDays size={18} /><div><span>Preparation</span><strong>{formatDate(draft.preparationStart)} – {formatDate(draft.preparationEnd)}</strong><small>{draft.preparationDays} days</small></div></section><section><Clock3 size={18} /><div><span>Publishing</span><strong>{formatDate(draft.liveStart)} – {formatDate(draft.liveEnd)}</strong><small>{draft.liveDays} days</small></div></section><section><Target size={18} /><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><WalletCards size={18} /><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
+      {step === 1 ? <WizardSection number="01" title="Campaign" description="What are you launching?"><div className="form-grid form-grid-two"><label className="field full"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Community Managers claim an allocation, then create promotions for their creators.</InfoToast></WizardSection> : null}
+      {step === 2 ? <WizardSection number="02" title="Campaign commitment" description="Set the duration, content target, and pool."><div className="form-grid form-grid-two campaign-commitment-fields"><label className="field"><span>Campaign duration</span><div className="input-suffix"><input aria-label="Campaign duration" type="number" min="3" max="12" value={campaignMonths} onChange={(event) => updateCampaignMonths(Number(event.target.value))} /><span>months</span></div><small>Choose 3 to 12 months.</small></label><div className="full"><CampaignDurationCalendar start={draft.liveStart} months={campaignMonths} /></div><label className="field"><span>Content target</span><div className="input-suffix"><input aria-label="Content target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><label className="field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
+      {step === 3 ? <WizardSection number="03" title="Campaign brief" description="Set the direction Community Managers will use for promotions."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
+      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><span className="review-icon"><Clock3 size={26} /></span><div><span>Campaign duration</span><strong>{formatDate(draft.liveStart)} – {formatDate(campaignEnd)}</strong><small>{campaignMonths} months</small></div></section><section><span className="review-icon"><Target size={26} /></span><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><span className="review-icon"><WalletCards size={26} /></span><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
       <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < 4 ? <button className="button button-primary" onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
     </main>
   </div>
@@ -489,7 +517,7 @@ function CompletionReport({ opportunityId }: { opportunityId: string }) {
   const metrics = getOpportunityMetrics(state, opportunityId)
   const claims = state.claims.filter((item) => item.opportunityId === opportunityId)
   const used = opportunityBudgetUsed(state, opportunityId)
-  return <div className="report-page"><section className="report-cover"><span className="report-logo">OkPo × {state.brand.name}</span><StatusBadge status={opportunity.status} /><h2>{opportunity.name}</h2><p>Campaign completion report</p><div><span>Live period</span><strong>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</strong></div></section><section className="metrics-grid metrics-grid-four"><MetricCard label="Content commitment" value={opportunity.requiredContent} detail="published contents" /><MetricCard label="Counted content" value={metrics.counted} detail={`${metrics.completionPercentage}% fulfillment`} tone="yellow" /><MetricCard label="Communities" value={claims.length} detail="participating" /><MetricCard label="Budget used" value={formatCurrency(used)} detail={`of ${formatCurrency(opportunity.totalBudget)}`} /></section><Panel title="Community completion"><div className="community-report-grid">{claims.map((claim) => { const community = state.communities.find((item) => item.id === claim.communityId)!; const ids = new Set(state.communityCampaigns.filter((item) => item.opportunityId === opportunityId && item.communityId === community.id).map((item) => item.id)); const counted = state.contents.filter((item) => ids.has(item.communityCampaignId) && item.status === 'Counted').length; return <article key={claim.id}><Avatar initials={community.initials} tone="cream" /><div><strong>{community.name}</strong><small>{community.leaderName}</small></div><span>{counted}/{claim.contentQuota}</span><ProgressBar value={Math.round(counted / claim.contentQuota * 100)} /><b>{Math.round(counted / claim.contentQuota * 100)}%</b></article> })}</div></Panel><Callout tone={metrics.completionPercentage >= 100 ? 'green' : 'neutral'} title={metrics.completionPercentage >= 100 ? 'Published-content commitment fulfilled' : 'Campaign delivery in progress'}>{metrics.counted} validated and counted contents contribute to the agreed volume. Available views and engagement remain supporting metrics.</Callout></div>
+  return <div className="report-page"><section className="report-cover"><span className="report-logo">OkPo × {state.brand.name}</span><StatusBadge status={opportunity.status} /><h2>{opportunity.name}</h2><p>Campaign completion report</p><div><span>Live period</span><strong>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</strong></div></section><section className="metrics-grid metrics-grid-four"><MetricCard label="Content commitment" value={opportunity.requiredContent} detail="published contents" /><MetricCard label="Counted content" value={metrics.counted} detail={`${metrics.completionPercentage}% fulfillment`} tone="yellow" /><MetricCard label="Communities" value={claims.length} detail="participating" /><MetricCard label="Budget used" value={formatCurrency(used)} detail={`of ${formatCurrency(opportunity.totalBudget)}`} /></section><Panel title="Community completion"><div className="community-report-grid">{claims.map((claim) => { const community = state.communities.find((item) => item.id === claim.communityId)!; const ids = new Set(state.communityCampaigns.filter((item) => item.opportunityId === opportunityId && item.communityId === community.id).map((item) => item.id)); const counted = state.contents.filter((item) => ids.has(item.communityCampaignId) && item.status === 'Counted').length; return <article key={claim.id}><Avatar initials={community.initials} tone="cream" /><div><strong>{community.name}</strong><small>{community.leaderName}</small></div><span>{counted}/{claim.contentQuota}</span><ProgressBar value={Math.round(counted / claim.contentQuota * 100)} /><b>{Math.round(counted / claim.contentQuota * 100)}%</b></article> })}</div></Panel><Callout tone={metrics.completionPercentage >= 100 ? 'green' : 'neutral'} title={metrics.completionPercentage >= 100 ? 'Published-content commitment fulfilled' : 'Campaign delivery in progress'}>{metrics.counted} recorded contents contribute to the agreed volume. Available views and engagement remain supporting metrics.</Callout></div>
 }
 
 export function BrandContent() {
@@ -501,9 +529,100 @@ export function BrandContent() {
 }
 
 export function BrandReports() {
-  const { state } = useApp()
-  const completed = state.opportunities.filter((item) => item.status === 'Completed')
-  return <div className="page-stack"><PageHeader eyebrow="CAMPAIGN REPORTS" title="Completion, made accountable" description="Final content fulfillment, community delivery, and budget utilization." /><div className="report-list">{completed.map((item) => { const metrics = getOpportunityMetrics(state, item.id); return <Link to={`/brand/opportunities/${item.id}?tab=report`} key={item.id}><span className="report-file"><FileText size={23} /></span><div><strong>{item.name}</strong><p>{formatDate(item.liveStart)} – {formatDate(item.liveEnd)} · {metrics.counted} counted contents</p></div><StatusBadge status={item.status} /><span className="report-score">{metrics.completionPercentage}%</span><ArrowRight size={17} /></Link> })}</div></div>
+  const [selectedCampaign, setSelectedCampaign] = useState<MadridCampaign | null>(null)
+  const [selectedPromotion, setSelectedPromotion] = useState<MadridPromotion | null>(null)
+  const campaignPromotions = selectedCampaign ? madridPromotions.filter((item) => item.campaignId === selectedCampaign.id) : []
+
+  function openCampaign(campaign: MadridCampaign) {
+    setSelectedPromotion(null)
+    setSelectedCampaign(campaign)
+  }
+
+  function closeReport() {
+    setSelectedCampaign(null)
+    setSelectedPromotion(null)
+  }
+
+  return <div className="page-stack brand-analytics-page">
+    <PageHeader eyebrow="REPORTS" title="Performance at every level" description="Open a campaign, then drill into the promotions delivering it." />
+    <section className="metrics-grid metrics-grid-four report-summary-metrics" aria-label="Portfolio analytics">
+      <MetricCard label="Impressions" value="6.8M" icon={Eye} />
+      <MetricCard label="Clicks" value="184.2K" icon={MousePointerClick} />
+      <MetricCard label="CTR" value="2.7%" icon={Percent} />
+      <MetricCard label="Engagement" value="296.3K" icon={BarChart3} />
+    </section>
+    <section className="report-campaign-section">
+      <header><div><span className="eyebrow">CAMPAIGNS</span><h2>Campaign performance</h2></div><small>Select a campaign to explore its promotions</small></header>
+      <div className="report-campaign-grid">
+        {madridCampaigns.map((campaign) => {
+          const publishedProgress = Math.round(campaign.published / campaign.target * 100)
+          return <button type="button" className="report-campaign-card" key={campaign.id} onClick={() => openCampaign(campaign)}>
+            <img src={campaign.src} alt="" />
+            <div>
+              <span>Madrid Philippines</span>
+              <h3>{campaign.name}</h3>
+              <dl>
+                <div><dt>Spent</dt><dd>{formatCurrency(campaign.spent)}</dd></div>
+                <div><dt>Published</dt><dd>{campaign.published}/{campaign.target}</dd></div>
+              </dl>
+              <ProgressBar value={publishedProgress} />
+            </div>
+            <ArrowRight size={18} />
+          </button>
+        })}
+      </div>
+    </section>
+    {selectedCampaign ? <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeReport() }}>
+      <div className="modal-card analytics-drilldown-modal" role="dialog" aria-modal="true" aria-label={`${selectedCampaign.name} analytics`}>
+        <header>
+          <div>
+            <span className="eyebrow">{selectedPromotion ? 'PROMOTION ANALYTICS' : 'CAMPAIGN ANALYTICS'}</span>
+            <h2>{selectedPromotion?.name ?? selectedCampaign.name}</h2>
+          </div>
+          <button type="button" className="icon-button" onClick={closeReport} aria-label="Close analytics">×</button>
+        </header>
+        {selectedPromotion ? <PromotionAnalytics promotion={selectedPromotion} campaign={selectedCampaign} onBack={() => setSelectedPromotion(null)} /> : <>
+          <div className="analytics-campaign-hero"><img src={selectedCampaign.src} alt="" /><div><span>Goal</span><p>{selectedCampaign.goal}</p></div></div>
+          <section className="metrics-grid metrics-grid-four analytics-modal-metrics">
+            <MetricCard label="Spent" value={formatCurrency(selectedCampaign.spent)} />
+            <MetricCard label="Published" value={`${selectedCampaign.published}/${selectedCampaign.target}`} />
+            <MetricCard label="Impressions" value={formatNumber(selectedCampaign.published * 22600)} />
+            <MetricCard label="Engagement" value={formatNumber(selectedCampaign.published * 985)} />
+          </section>
+          <section className="promotion-drill-list">
+            <header><div><span className="eyebrow">PROMOTIONS</span><h3>Performance by promotion</h3></div><small>{campaignPromotions.length} active</small></header>
+            {campaignPromotions.map((promotion) => <button type="button" key={promotion.id} onClick={() => setSelectedPromotion(promotion)}>
+              <img src={promotion.src} alt="" />
+              <span><strong>{promotion.name}</strong><small>Managed by {promotion.manager}</small></span>
+              <dl><div><dt>Views</dt><dd>{formatNumber(promotion.views)}</dd></div><div><dt>Clicks</dt><dd>{formatNumber(promotion.clicks)}</dd></div></dl>
+              <ArrowRight size={17} />
+            </button>)}
+          </section>
+        </>}
+      </div>
+    </div> : null}
+  </div>
+}
+
+function PromotionAnalytics({ promotion, campaign, onBack }: { promotion: MadridPromotion; campaign: MadridCampaign; onBack: () => void }) {
+  const ctr = promotion.views ? promotion.clicks / promotion.views * 100 : 0
+  return <div className="promotion-analytics-detail">
+    <button type="button" className="back-link" onClick={onBack}><ArrowLeft size={15} />{campaign.name}</button>
+    <div className="analytics-promotion-hero"><img src={promotion.src} alt="" /><div><span>Managed by</span><h3>{promotion.manager}</h3><p>This promotion turns the campaign brief into locally relevant creator content and measurable audience action.</p></div></div>
+    <section className="metrics-grid metrics-grid-four analytics-modal-metrics">
+      <MetricCard label="Views" value={formatNumber(promotion.views)} icon={Eye} />
+      <MetricCard label="Clicks" value={formatNumber(promotion.clicks)} icon={MousePointerClick} />
+      <MetricCard label="CTR" value={`${ctr.toFixed(1)}%`} icon={Percent} />
+      <MetricCard label="Engagement" value={formatNumber(promotion.engagement)} icon={BarChart3} />
+    </section>
+    <Panel title="Promotion contribution" description="Attributed performance within this campaign.">
+      <dl className="summary-list">
+        <div><dt>Community earnings</dt><dd>{formatCurrency(promotion.earnings)}</dd></div>
+        <div><dt>Share of published content</dt><dd>{Math.max(1, Math.round(promotion.engagement / Math.max(1, campaign.published * 100)))}%</dd></div>
+        <div><dt>Campaign</dt><dd>{campaign.name}</dd></div>
+      </dl>
+    </Panel>
+  </div>
 }
 
 export function BrandProfilePage() {
@@ -511,5 +630,5 @@ export function BrandProfilePage() {
   const [brand, setBrand] = useState(state.brand)
   const [saved, setSaved] = useState(false)
   function submit(event: React.FormEvent) { event.preventDefault(); dispatch({ type: 'UPDATE_BRAND', brand }); setSaved(true) }
-  return <div className="page-stack settings-page"><PageHeader eyebrow="BRAND PROFILE" title="Your identity across OkPo" description="Community Leaders see this information when evaluating campaigns." /><form className="panel profile-form" onSubmit={submit}><div className="profile-identity"><Avatar initials={brand.initials} size="lg" tone="yellow" /><div><strong>{brand.name}</strong><span>Verified Brand</span></div></div><div className="form-grid form-grid-two"><label className="field"><span>Brand name</span><input value={brand.name} onChange={(event) => setBrand({ ...brand, name: event.target.value })} /></label><label className="field"><span>Website</span><input value={brand.website} onChange={(event) => setBrand({ ...brand, website: event.target.value })} /></label><label className="field"><span>Industry</span><input value={brand.industry} onChange={(event) => setBrand({ ...brand, industry: event.target.value })} /></label><label className="field"><span>Location</span><input value={brand.location} onChange={(event) => setBrand({ ...brand, location: event.target.value })} /></label><label className="field full"><span>Brand description</span><textarea rows={4} value={brand.description} onChange={(event) => setBrand({ ...brand, description: event.target.value })} /></label><label className="field"><span>Primary contact</span><input value={brand.contactName} onChange={(event) => setBrand({ ...brand, contactName: event.target.value })} /></label><label className="field"><span>Contact email</span><input type="email" value={brand.contactEmail} onChange={(event) => setBrand({ ...brand, contactEmail: event.target.value })} /></label></div><footer className="form-footer">{saved ? <span className="saved-message"><CheckCircle2 size={16} />Saved to this prototype</span> : <span />}<button className="button button-primary">Save brand profile</button></footer></form></div>
+  return <div className="page-stack settings-page"><PageHeader eyebrow="BRAND PROFILE" title="Your identity across OkPo" description="Community Managers see this information when evaluating campaigns." /><form className="panel profile-form" onSubmit={submit}><div className="profile-identity"><Avatar initials={brand.initials} size="lg" tone="yellow" /><div><strong>{brand.name}</strong><span>Verified Brand</span></div></div><div className="form-grid form-grid-two"><label className="field"><span>Brand name</span><input value={brand.name} onChange={(event) => setBrand({ ...brand, name: event.target.value })} /></label><label className="field"><span>Website</span><input value={brand.website} onChange={(event) => setBrand({ ...brand, website: event.target.value })} /></label><label className="field"><span>Industry</span><input value={brand.industry} onChange={(event) => setBrand({ ...brand, industry: event.target.value })} /></label><label className="field"><span>Location</span><input value={brand.location} onChange={(event) => setBrand({ ...brand, location: event.target.value })} /></label><label className="field full"><span>Brand description</span><textarea rows={4} value={brand.description} onChange={(event) => setBrand({ ...brand, description: event.target.value })} /></label><label className="field"><span>Primary contact</span><input value={brand.contactName} onChange={(event) => setBrand({ ...brand, contactName: event.target.value })} /></label><label className="field"><span>Contact email</span><input type="email" value={brand.contactEmail} onChange={(event) => setBrand({ ...brand, contactEmail: event.target.value })} /></label></div><footer className="form-footer">{saved ? <span className="saved-message"><CheckCircle2 size={16} />Saved to this prototype</span> : <span />}<button className="button button-primary">Save brand profile</button></footer></form></div>
 }

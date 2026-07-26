@@ -841,6 +841,54 @@ td > strong { color: var(--ink); }
 .community-membership p { margin: 0 0 8px; color: var(--muted); font-size: 9px; }
 .community-membership > div > span { color: var(--soft-muted); display: flex; align-items: center; gap: 5px; font-size: 8px; }
 .community-membership > strong { color: var(--green); display: flex; align-items: center; gap: 5px; font-size: 9px; }
+.campaign-duration-calendar { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #f7f7f2; }
+.duration-calendar-heading { display: flex; align-items: center; gap: 10px; }
+.duration-calendar-heading > div { display: grid; gap: 3px; }
+.duration-calendar-heading small { color: var(--muted); font-size: 9px; }
+.duration-months { margin-top: 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.duration-months span { padding: 9px 6px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--soft-muted); text-align: center; }
+.duration-months span.selected { border-color: #d8ae00; background: var(--yellow-soft); color: var(--ink); }
+.duration-months small, .duration-months strong { display: block; }
+.duration-months small { font-size: 8px; text-transform: uppercase; }
+.duration-months strong { margin-top: 2px; font-size: 9px; }
+.review-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--yellow-soft); display: grid; place-items: center; flex: 0 0 44px; }
+.brand-analytics-page { gap: 22px; }
+.report-campaign-section { display: grid; gap: 14px; }
+.report-campaign-section > header, .promotion-drill-list > header { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.report-campaign-section h2, .promotion-drill-list h3 { margin: 0; }
+.report-campaign-section p, .promotion-drill-list p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
+.report-campaign-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.report-campaign-card { min-width: 0; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--ink); display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; align-items: center; overflow: hidden; text-align: left; cursor: pointer; }
+.report-campaign-card > img { width: 120px; height: 120px; object-fit: cover; }
+.report-campaign-card > div { min-width: 0; padding: 14px; }
+.report-campaign-card h3 { margin: 5px 0; font-size: 17px; }
+.report-campaign-card p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-campaign-card > svg { margin-right: 14px; }
+.analytics-drilldown-modal { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+.analytics-drilldown-modal > header { margin-bottom: 16px; display: flex; justify-content: space-between; gap: 16px; }
+.analytics-drilldown-modal > header h2 { margin: 5px 0 0; }
+.analytics-campaign-hero, .analytics-promotion-hero { padding: 14px; border-radius: 13px; background: #f5f5ef; display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 16px; align-items: center; }
+.analytics-campaign-hero img, .analytics-promotion-hero img { width: 130px; height: 130px; border-radius: 11px; object-fit: cover; }
+.analytics-campaign-hero h3, .analytics-promotion-hero h3 { margin: 0 0 6px; }
+.analytics-campaign-hero p, .analytics-promotion-hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+.analytics-modal-metrics { margin-top: 14px; }
+.analytics-modal-metrics .metric-card { min-height: 110px; }
+.promotion-drill-list { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.promotion-drill-list > button { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: #fff; color: var(--ink); display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; text-align: left; cursor: pointer; }
+.promotion-drill-list img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
+.promotion-drill-list button strong, .promotion-drill-list button small { display: block; }
+.promotion-drill-list button small { margin-top: 4px; color: var(--muted); }
+.promotion-drill-list dl { margin: 0; display: flex; gap: 15px; }
+.promotion-drill-list dt { color: var(--muted); font-size: 8px; }
+.promotion-drill-list dd { margin: 3px 0 0; font-weight: 800; }
+.leader-promotion-list { display: grid; }
+.leader-promotion-row { min-width: 0; padding: 12px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.leader-promotion-row:last-child { border-bottom: 0; }
+.leader-promotion-row img { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; }
+.leader-promotion-row h3 { margin: 0; }
+.leader-promotion-row small { margin-top: 4px; color: var(--muted); display: block; }
+.leader-promotion-row > span:last-child { text-align: right; }
+.leader-promotion-row > span:last-child strong, .leader-promotion-row > span:last-child small { display: block; }
 
 @media (max-width: 1180px) {
   .brand-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1048,6 +1096,18 @@ td > strong { color: var(--ink); }
   .member-profile-card > div:last-child { grid-template-columns: 1fr; gap: 16px; }
   .community-membership { grid-template-columns: auto 1fr; }
   .community-membership > strong { grid-column: 2; }
+  .duration-months { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .report-campaign-grid { grid-template-columns: 1fr; }
+  .report-campaign-card { grid-template-columns: 90px minmax(0, 1fr) auto; }
+  .report-campaign-card > img { width: 90px; height: 90px; }
+  .analytics-drilldown-modal { max-height: calc(100dvh - 20px); padding: 18px; }
+  .analytics-campaign-hero, .analytics-promotion-hero { grid-template-columns: 86px minmax(0, 1fr); }
+  .analytics-campaign-hero img, .analytics-promotion-hero img { width: 86px; height: 86px; }
+  .promotion-drill-list > button { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .promotion-drill-list img { width: 44px; height: 44px; }
+  .promotion-drill-list button dl { display: none; }
+  .leader-promotion-row { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 10px; }
+  .leader-promotion-row img { width: 58px; height: 58px; }
 }
 
 @media (max-width: 430px) {
