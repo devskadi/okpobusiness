@@ -314,6 +314,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .money-input { grid-template-columns: auto 1fr; }
 .input-suffix input, .money-input input { border: 0; box-shadow: none!important; }
 .input-suffix > span { padding-right: 12px; color: var(--muted); font-size: 9px; }
+.number-stepper { min-height: 42px; border: 1px solid #d6d7cc; border-radius: 9px; background: #fff; display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; align-items: stretch; overflow: hidden; }
+.number-stepper button { border: 0; background: #f4f4ee; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.number-stepper button:first-child { border-right: 1px solid var(--line); }
+.number-stepper button:last-child { border-left: 1px solid var(--line); }
+.number-stepper button:disabled { color: var(--soft-muted); cursor: not-allowed; opacity: .55; }
+.number-stepper button:focus-visible { outline: 2px solid var(--focus); outline-offset: -3px; }
+.number-stepper input { min-width: 0; height: 40px; padding: 0 4px; border: 0; border-radius: 0; box-shadow: none!important; background: transparent; font-size: 16px; font-weight: 800; text-align: center; appearance: textfield; }
+.number-stepper input::-webkit-inner-spin-button, .number-stepper input::-webkit-outer-spin-button { margin: 0; appearance: none; }
+.number-stepper:focus-within { border-color: #b89400; box-shadow: 0 0 0 3px rgba(255, 216, 61, .22); }
+.number-stepper.is-invalid { border-color: #c44040; }
+.number-stepper.is-invalid:focus-within { box-shadow: 0 0 0 3px rgba(196, 64, 64, .14); }
+.field-error { color: #a52d2d!important; }
 .money-input > span { padding-left: 12px; font-weight: 800; }
 .field-icon { position: relative; }
 .field-icon svg { position: absolute; top: 13px; left: 11px; color: var(--soft-muted); }
@@ -450,6 +462,7 @@ td > strong { color: var(--ink); }
 .review-sections strong { margin-top: 3px; font-size: 11px; }
 .review-sections small { margin-top: 3px; color: var(--soft-muted); font-size: 8px; }
 .launch-panel, .claim-panel { padding: 23px; border-radius: 13px; background: var(--ink); color: #fff; }
+.launch-panel { min-height: 100%; display: flex; flex-direction: column; }
 .launch-panel h3 { margin: 13px 0 7px; font-size: 17px; }
 .launch-panel p { color: #adada2; font-size: 10px; line-height: 1.5; }
 .launch-panel dl, .claim-panel dl { margin: 20px 0; }
@@ -459,6 +472,7 @@ td > strong { color: var(--ink); }
 .launch-panel dd, .claim-panel dd { text-align: right; font-weight: 800; }
 .launch-panel .button { margin-top: 8px; }
 .launch-panel .button-secondary { background: #fff; color: var(--ink); }
+.launch-actions { margin-top: auto; }
 .content-campaign-groups { display: grid; gap: 18px; }
 .content-mobile-campaign { display: none; }
 .content-mobile-campaign > summary { min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; background: #f5f5ef; display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; font-size: 10px; font-weight: 750; }
@@ -842,6 +856,8 @@ td > strong { color: var(--ink); }
 .community-membership > div > span { color: var(--soft-muted); display: flex; align-items: center; gap: 5px; font-size: 8px; }
 .community-membership > strong { color: var(--green); display: flex; align-items: center; gap: 5px; font-size: 9px; }
 .campaign-duration-calendar { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #f7f7f2; }
+.campaign-commitment-fields { align-items: start; }
+.commitment-primary-field { min-width: 0; }
 .duration-calendar-heading { display: flex; align-items: center; gap: 10px; }
 .duration-calendar-heading > div { display: grid; gap: 3px; }
 .duration-calendar-heading small { color: var(--muted); font-size: 9px; }
@@ -851,7 +867,7 @@ td > strong { color: var(--ink); }
 .duration-months small, .duration-months strong { display: block; }
 .duration-months small { font-size: 8px; text-transform: uppercase; }
 .duration-months strong { margin-top: 2px; font-size: 9px; }
-.review-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--yellow-soft); display: grid; place-items: center; flex: 0 0 44px; }
+.review-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--yellow-soft); color: var(--ink); display: grid; place-items: center; flex: 0 0 48px; }
 .brand-analytics-page { gap: 22px; }
 .report-campaign-section { display: grid; gap: 14px; }
 .report-campaign-section > header, .promotion-drill-list > header { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
@@ -1043,6 +1059,10 @@ td > strong { color: var(--ink); }
   .activity-row { grid-template-columns: auto 1fr; }
   .activity-row time { grid-column: 2; }
   .form-grid-two { grid-template-columns: 1fr; }
+  .campaign-commitment-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; }
+  .campaign-commitment-fields .full { grid-column: 1 / -1; }
+  .campaign-commitment-fields .field > span { min-height: 28px; display: flex; align-items: end; }
+  .campaign-commitment-fields .number-stepper { grid-template-columns: 34px minmax(0, 1fr) 34px; }
   .field.full, .full { grid-column: 1; }
   .wizard-page { margin: -24px auto -55px; }
   .wizard-stepper { margin-inline: -14px; padding-inline: 14px; }

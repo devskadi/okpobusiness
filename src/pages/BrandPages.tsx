@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown,
   Clock3, Eye, FileCheck2, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
-  Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
+  Minus, Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -302,13 +302,18 @@ function durationMonths(days: number) {
 
 function CampaignDurationCalendar({ start, months }: { start: string; months: number }) {
   const startDate = new Date(`${start}T00:00:00Z`)
+  const endDate = new Date(`${campaignEndFromMonths(start, months)}T00:00:00Z`)
   return <div className="campaign-duration-calendar" aria-label={`${months} month campaign calendar`}>
     <div className="duration-calendar-heading"><CalendarDays size={20} /><div><strong>{months} month campaign</strong><small>{formatDate(start)} – {formatDate(campaignEndFromMonths(start, months))}</small></div></div>
     <div className="duration-months">
       {Array.from({ length: 12 }, (_, index) => {
         const month = new Date(startDate)
+        month.setUTCDate(1)
         month.setUTCMonth(month.getUTCMonth() + index)
-        return <span className={index < months ? 'selected' : ''} key={`${month.getUTCFullYear()}-${month.getUTCMonth()}`}>
+        const monthIndex = month.getUTCFullYear() * 12 + month.getUTCMonth()
+        const endMonthIndex = endDate.getUTCFullYear() * 12 + endDate.getUTCMonth()
+        const isWithinCampaign = monthIndex <= endMonthIndex
+        return <span className={isWithinCampaign ? 'selected' : ''} key={`${month.getUTCFullYear()}-${month.getUTCMonth()}`}>
           <small>{month.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })}</small>
           <strong>{month.getUTCFullYear()}</strong>
         </span>
@@ -322,9 +327,21 @@ export function BrandNewOpportunity() {
   const navigate = useNavigate()
   const [draft, setDraft] = useState<OpportunityDraft>(state.opportunityDraft)
   const [step, setStep] = useState(Math.max(1, state.opportunityDraft.step))
+  const [campaignMonthsInput, setCampaignMonthsInput] = useState(() => String(durationMonths(state.opportunityDraft.liveDays)))
   function update(next: Partial<OpportunityDraft>) { setDraft((current) => ({ ...current, ...next })) }
   function updateCampaignMonths(value: number) {
     const months = Math.min(12, Math.max(3, value || 3))
+    setCampaignMonthsInput(String(months))
+    setDraft((current) => ({
+      ...current,
+      liveDays: months * 30,
+      liveEnd: campaignEndFromMonths(current.liveStart, months),
+    }))
+  }
+  function typeCampaignMonths(value: string) {
+    setCampaignMonthsInput(value)
+    const months = Number(value)
+    if (!Number.isInteger(months) || months < 3 || months > 12) return
     setDraft((current) => ({
       ...current,
       liveDays: months * 30,
@@ -334,6 +351,8 @@ export function BrandNewOpportunity() {
   function go(next: number) { const saved = { ...draft, step: next }; setDraft(saved); setStep(next); dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: saved }); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const product = state.products.find((item) => item.id === draft.productId)
   const campaignMonths = durationMonths(draft.liveDays)
+  const typedCampaignMonths = Number(campaignMonthsInput)
+  const campaignMonthsInvalid = !Number.isInteger(typedCampaignMonths) || typedCampaignMonths < 3 || typedCampaignMonths > 12
   const campaignEnd = campaignEndFromMonths(draft.liveStart, campaignMonths)
   function finish(mode: 'draft' | 'post') {
     dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, liveDays: campaignMonths * 30, liveEnd: campaignEnd, step: 4 } })
@@ -345,10 +364,10 @@ export function BrandNewOpportunity() {
     <div className="wizard-stepper">{wizardSteps.map((label, index) => <button key={label} className={step === index + 1 ? 'active' : step > index + 1 ? 'complete' : ''} onClick={() => go(index + 1)}><span>{step > index + 1 ? <Check size={13} /> : index + 1}</span><small>{label}</small></button>)}</div>
     <main className="wizard-body">
       {step === 1 ? <WizardSection number="01" title="Campaign" description="What are you launching?"><div className="form-grid form-grid-two"><label className="field full"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Community Managers claim an allocation, then create promotions for their creators.</InfoToast></WizardSection> : null}
-      {step === 2 ? <WizardSection number="02" title="Campaign commitment" description="Set the duration, content target, and pool."><div className="form-grid form-grid-two campaign-commitment-fields"><label className="field"><span>Campaign duration</span><div className="input-suffix"><input aria-label="Campaign duration" type="number" min="3" max="12" value={campaignMonths} onChange={(event) => updateCampaignMonths(Number(event.target.value))} /><span>months</span></div><small>Choose 3 to 12 months.</small></label><div className="full"><CampaignDurationCalendar start={draft.liveStart} months={campaignMonths} /></div><label className="field"><span>Content target</span><div className="input-suffix"><input aria-label="Content target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><label className="field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
+      {step === 2 ? <WizardSection number="02" title="Campaign commitment" description="Set the duration, content target, and pool."><div className="form-grid form-grid-two campaign-commitment-fields"><div className="field commitment-primary-field"><span>Duration (months)</span><div className={`number-stepper${campaignMonthsInvalid ? ' is-invalid' : ''}`} role="group" aria-label="Duration in months"><button type="button" aria-label="Decrease campaign duration" disabled={campaignMonths <= 3} onClick={() => updateCampaignMonths(campaignMonths - 1)}><Minus size={16} /></button><input aria-label="Duration (months)" type="number" min="3" max="12" required value={campaignMonthsInput} aria-invalid={campaignMonthsInvalid} onChange={(event) => typeCampaignMonths(event.target.value)} /><button type="button" aria-label="Increase campaign duration" disabled={campaignMonths >= 12} onClick={() => updateCampaignMonths(campaignMonths + 1)}><Plus size={16} /></button></div>{campaignMonthsInvalid ? <small className="field-error">Enter a whole number from 3 to 12.</small> : null}</div><label className="field commitment-primary-field"><span>Target</span><div className="input-suffix"><input aria-label="Target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><div className="full"><CampaignDurationCalendar start={draft.liveStart} months={campaignMonths} /></div><label className="field full"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
       {step === 3 ? <WizardSection number="03" title="Campaign brief" description="Set the direction Community Managers will use for promotions."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
-      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><span className="review-icon"><Clock3 size={26} /></span><div><span>Campaign duration</span><strong>{formatDate(draft.liveStart)} – {formatDate(campaignEnd)}</strong><small>{campaignMonths} months</small></div></section><section><span className="review-icon"><Target size={26} /></span><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><span className="review-icon"><WalletCards size={26} /></span><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></aside></div></WizardSection> : null}
-      <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < 4 ? <button className="button button-primary" onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
+      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><span className="review-icon"><Clock3 size={28} /></span><div><span>Campaign duration</span><strong>{formatDate(draft.liveStart)} – {formatDate(campaignEnd)}</strong><small>{campaignMonths} months</small></div></section><section><span className="review-icon"><Target size={28} /></span><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><span className="review-icon"><WalletCards size={28} /></span><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><div className="launch-actions"><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></div></aside></div></WizardSection> : null}
+      <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < 4 ? <button className="button button-primary" disabled={step === 2 && campaignMonthsInvalid} onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
     </main>
   </div>
 }
