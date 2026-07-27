@@ -223,7 +223,6 @@ export function BrandDashboard() {
     </section>
     <section className="metrics-grid brand-kpi-grid">
       <article className="metric-card pool-card finance-primary gpv-primary">
-        <div className="metric-top"><i><WalletCards size={18} /></i></div>
         <div className="pool-card-values">
           <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong></div>
           <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong></div>
@@ -413,8 +412,8 @@ export function BrandOpportunities() {
         const analytics = promotions.reduce((totals, promotion) => ({
           views: totals.views + promotion.views,
           clicks: totals.clicks + promotion.clicks,
-          engagement: totals.engagement + promotion.engagement,
-        }), { views: 0, clicks: 0, engagement: 0 })
+          earnings: totals.earnings + promotion.earnings,
+        }), { views: 0, clicks: 0, earnings: 0 })
         return <details className="campaign-portfolio-card" key={campaign.id}>
           <summary>
             <img src={campaign.src} alt="" />
@@ -455,7 +454,7 @@ export function BrandOpportunities() {
               <dl>
                 <div><dt>Views</dt><dd>{formatNumber(analytics.views)}</dd></div>
                 <div><dt>Clicks</dt><dd>{formatNumber(analytics.clicks)}</dd></div>
-                <div><dt>Engagement</dt><dd>{formatNumber(analytics.engagement)}</dd></div>
+                <div><dt>Earnings</dt><dd>{formatCurrency(analytics.earnings)}</dd></div>
               </dl>
             </section>
             {campaign.to ? <Link className="campaign-portfolio-link" to={campaign.to}>View campaign <ArrowRight size={15} /></Link> : null}
@@ -596,11 +595,11 @@ export function BrandReports() {
           const publishedProgress = Math.round(campaign.published / campaign.target * 100)
           return <button type="button" className="report-campaign-card" key={campaign.id} onClick={() => openCampaign(campaign)}>
             <img src={campaign.src} alt="" />
-            <div>
-              <span>Madrid Philippines</span>
+            <div className="report-campaign-body">
               <h3>{campaign.name}</h3>
+              <span>Madrid Philippines</span>
+              <div className="report-campaign-primary"><span>Spent</span><strong>{formatCurrency(campaign.spent)}</strong></div>
               <dl>
-                <div><dt>Spent</dt><dd>{formatCurrency(campaign.spent)}</dd></div>
                 <div><dt>Published</dt><dd>{campaign.published}/{campaign.target}</dd></div>
               </dl>
               <ProgressBar value={publishedProgress} />

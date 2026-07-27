@@ -60,6 +60,8 @@ describe('OkPo role workspaces', () => {
     expect(within(campaignCard).getByText('Campaign brief')).toBeInTheDocument()
     expect(within(campaignCard).getByLabelText('Campaign analytics')).toBeInTheDocument()
     expect(within(campaignCard).getByText('84,900')).toBeInTheDocument()
+    expect(within(campaignCard).getByText('Earnings')).toBeInTheDocument()
+    expect(within(campaignCard).getByText('₱33,000')).toBeInTheDocument()
   })
 
   it('renders the complete Brand opportunity wizard directly', () => {
