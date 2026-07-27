@@ -247,6 +247,12 @@ export function BrandDashboard() {
         </div>
       </section>
     </section>
+    <section className="metrics-grid metrics-grid-four report-summary-metrics dashboard-summary-metrics" aria-label="Portfolio performance">
+      <MetricCard label="Impressions" value="6.8M" />
+      <MetricCard label="Clicks" value="184.2K" />
+      <MetricCard label="CTR" value="2.7%" />
+      <MetricCard label="Engagement" value="296.3K" />
+    </section>
     {selectedCampaign ? <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="campaign-details-title">
       <div className="modal-card campaign-details-modal">
         <header><div><span className="eyebrow">CAMPAIGN DETAILS</span><h2 id="campaign-details-title">{selectedCampaign.name}</h2></div><button className="icon-button" onClick={() => setSelectedCampaign(null)} aria-label="Close campaign details">×</button></header>

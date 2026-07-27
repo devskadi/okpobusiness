@@ -15,6 +15,9 @@ describe('OkPo role workspaces', () => {
   it('renders the Brand command center and fixed-content campaign', () => {
     renderRoute('/brand')
     expect(screen.getByRole('heading', { name: /Good morning, Cloud/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Portfolio performance')).toBeInTheDocument()
+    expect(screen.getByText('6.8M')).toBeInTheDocument()
+    expect(screen.getByText('296.3K')).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
     expect(screen.getByText('₱1,215,420')).toBeInTheDocument()
