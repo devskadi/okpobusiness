@@ -14,13 +14,19 @@ describe('OkPo role workspaces', () => {
 
   it('renders the Brand command center and fixed-content campaign', () => {
     renderRoute('/brand')
-    expect(screen.getByRole('heading', { name: /Good morning, Alexis/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Good morning, Cloud/i })).toBeInTheDocument()
     expect(screen.getByText('Gross Pool Value')).toBeInTheDocument()
     expect(screen.getByText('Liquidity')).toBeInTheDocument()
+    expect(screen.getByText('₱1,215,420')).toBeInTheDocument()
+    expect(screen.getByLabelText('₱171,181')).toBeInTheDocument()
+    expect(screen.queryByText('4 posted campaigns')).not.toBeInTheDocument()
+    expect(screen.queryByText('14% deployed')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Solutions Job Fair' })).toBeInTheDocument()
     expect(screen.getByText('Activated communities')).toBeInTheDocument()
     expect(screen.queryByText('Creator roster')).not.toBeInTheDocument()
     expect(screen.getByText('FEATURED CAMPAIGNS')).toBeInTheDocument()
+    expect(screen.getByText('9 posts')).toBeInTheDocument()
+    expect(screen.getAllByRole('img', { name: /TikTok content preview/ })).toHaveLength(9)
   })
 
   it('opens the active community directory', async () => {
@@ -45,9 +51,26 @@ describe('OkPo role workspaces', () => {
     expect(within(dialog).getByText('TOP CONTENT')).toBeInTheDocument()
   })
 
+  it('shows campaign brief and analytics in expanded portfolio cards', async () => {
+    const user = userEvent.setup()
+    renderRoute('/brand/opportunities')
+    const campaignHeading = screen.getByRole('heading', { name: 'Solutions Job Fair' })
+    const campaignCard = campaignHeading.closest('details')!
+    await user.click(campaignHeading)
+    expect(within(campaignCard).getByText('Campaign brief')).toBeInTheDocument()
+    expect(within(campaignCard).getByLabelText('Campaign analytics')).toBeInTheDocument()
+    expect(within(campaignCard).getByText('84,900')).toBeInTheDocument()
+  })
+
   it('renders the complete Brand opportunity wizard directly', () => {
     renderRoute('/brand/opportunities/new')
-    expect(screen.getByRole('heading', { name: 'Campaign' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Madrid Philippines' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Campaign brief' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Campaign name')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Product')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Platform')).not.toBeInTheDocument()
+    expect(screen.queryByText('How it works')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Save & exit' })).not.toBeInTheDocument()
     expect(screen.getByText('Timing')).toBeInTheDocument()
     expect(screen.getByText('Review')).toBeInTheDocument()
   })
@@ -88,6 +111,15 @@ describe('OkPo role workspaces', () => {
     expect(calendar.querySelectorAll('.duration-months .selected')).toHaveLength(4)
     expect(within(calendar).getByText('Dec')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Continue/i })).toBeEnabled()
+  })
+
+  it('updates campaign duration when a calendar month is selected', async () => {
+    const user = userEvent.setup()
+    renderRoute('/brand/opportunities/new')
+    await user.click(screen.getByRole('button', { name: /Timing/i }))
+    await user.click(screen.getByRole('button', { name: /Set campaign duration to 4 months, ending in January 2027/i }))
+    expect(screen.getByRole('spinbutton', { name: 'Duration (months)' })).toHaveValue(4)
+    expect(screen.getByLabelText('4 month campaign calendar')).toBeInTheDocument()
   })
 
   it('groups Brand content by campaign', () => {

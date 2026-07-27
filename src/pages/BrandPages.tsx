@@ -1,6 +1,6 @@
 import {
   ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown,
-  Clock3, Eye, FileCheck2, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
+  Eye, FileCheck2, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
   Minus, Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -99,16 +99,13 @@ function useShowcaseLiquidity(baseValue: number) {
     setDisplayValue(baseValue)
     if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const increments = [4200, 6900, 8800, 5300]
+    const decrements = [500, 750, 1000, 625]
     const timers = new Set<number>()
-    let incrementIndex = 0
-    let frame = 0
     let visible = typeof IntersectionObserver === 'undefined'
 
     const clearTimers = () => {
       timers.forEach((timer) => window.clearTimeout(timer))
       timers.clear()
-      window.cancelAnimationFrame(frame)
     }
 
     const later = (callback: () => void, delay: number) => {
@@ -121,33 +118,29 @@ function useShowcaseLiquidity(baseValue: number) {
 
     const scheduleCycle = (delay = 5200) => later(() => {
       if (!visible) return
-      const startedAt = performance.now()
-      const increase = increments[incrementIndex % increments.length]
-      incrementIndex += 1
-      setMotionState('counting')
-
-      const tick = (now: number) => {
+      let nextValue = baseValue
+      let stepIndex = 0
+      const countDown = () => {
         if (!visible) return
-        const progress = Math.min(1, (now - startedAt) / 1100)
-        const eased = 1 - Math.pow(1 - progress, 3)
-        setDisplayValue(baseValue + Math.round(increase * eased))
-        if (progress < 1) {
-          frame = window.requestAnimationFrame(tick)
+        nextValue = Math.max(0, nextValue - decrements[stepIndex])
+        stepIndex += 1
+        setMotionState('counting')
+        setDisplayValue(nextValue)
+        later(() => setMotionState('idle'), 300)
+        if (stepIndex < decrements.length) {
+          later(countDown, 1200)
           return
         }
-
-        setMotionState('idle')
         later(() => {
           setMotionState('resetting')
-          later(() => setDisplayValue(baseValue), 150)
           later(() => {
+            setDisplayValue(baseValue)
             setMotionState('idle')
             scheduleCycle()
           }, 340)
-        }, 1600)
+        }, 1800)
       }
-
-      frame = window.requestAnimationFrame(tick)
+      countDown()
     }, delay)
 
     let observer: IntersectionObserver | undefined
@@ -179,14 +172,23 @@ function useShowcaseLiquidity(baseValue: number) {
   return { displayValue, motionState, valueRef }
 }
 
+const tiktokContentPreviews = Array.from({ length: 9 }, (_, index) => `/assets/tiktok-preview-${String(index + 1).padStart(2, '0')}.png`)
+const madridFinancialSnapshot = {
+  paid: 745885.02,
+  pending: 23286,
+  walletBalance: 98985.79,
+}
+const madridGrossPoolValue = (madridFinancialSnapshot.paid + madridFinancialSnapshot.pending + madridFinancialSnapshot.walletBalance) * 1.4
+const madridLiquidity = (madridFinancialSnapshot.pending + madridFinancialSnapshot.walletBalance) * 1.4
+
 export function BrandDashboard() {
   const { state } = useApp()
   const [communitiesOpen, setCommunitiesOpen] = useState(false)
   const [selectedCampaign, setSelectedCampaign] = useState<FeaturedCampaign | null>(null)
   const [goalExpanded, setGoalExpanded] = useState(false)
   const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
-  const grossPoolValue = postedOpportunities.reduce((sum, item) => sum + item.totalBudget, 0)
-  const liquidity = postedOpportunities.reduce((sum, item) => sum + opportunityBudgetUsed(state, item.id), 0)
+  const grossPoolValue = madridGrossPoolValue
+  const liquidity = madridLiquidity
   const liquidityShowcase = useShowcaseLiquidity(liquidity)
   const campaignImages = madridCampaigns
   const campaignCarouselRef = useMobileAutoCarousel(campaignImages.length)
@@ -221,10 +223,10 @@ export function BrandDashboard() {
     </section>
     <section className="metrics-grid brand-kpi-grid">
       <article className="metric-card pool-card finance-primary gpv-primary">
-        <div className="metric-top"><span>Pool</span><i><WalletCards size={18} /></i></div>
+        <div className="metric-top"><i><WalletCards size={18} /></i></div>
         <div className="pool-card-values">
-          <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong><small>{postedOpportunities.length} posted campaigns</small></div>
-          <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong><small>{grossPoolValue ? Math.round(liquidity / grossPoolValue * 100) : 0}% deployed</small></div>
+          <div><span>Gross Pool Value</span><strong>{formatCurrency(grossPoolValue)}</strong></div>
+          <div><span>Liquidity</span><strong className="liquidity-showcase" ref={liquidityShowcase.valueRef} aria-label={formatCurrency(liquidity)}><span className={`liquidity-showcase-value is-${liquidityShowcase.motionState}`} aria-hidden="true">{formatCurrency(liquidityShowcase.displayValue)}</span></strong></div>
         </div>
       </article>
       <button className="metric-card community-directory-card" onClick={() => setCommunitiesOpen(true)}>
@@ -235,12 +237,11 @@ export function BrandDashboard() {
         </div>
       </button>
       <section className="dashboard-top-content" aria-labelledby="dashboard-top-content-title">
-        <div><span className="eyebrow" id="dashboard-top-content-title">TOP PERFORMING CONTENT</span><span>10 posts</span></div>
+        <div><span className="eyebrow" id="dashboard-top-content-title">TOP PERFORMING CONTENT</span><span>{tiktokContentPreviews.length} posts</span></div>
         <div>
-          {Array.from({ length: 10 }, (_, index) => {
-            const campaign = campaignImages[index % campaignImages.length]
-            return <article key={`${campaign.name}-dashboard-${index}`}>
-              <img src={campaign.src} alt="" />
+          {tiktokContentPreviews.map((src, index) => {
+            return <article key={src}>
+              <img src={src} alt={`TikTok content preview ${index + 1}`} />
               <span>{[82.4, 74.8, 68.1, 61.9, 57.3, 52.6, 48.2, 43.7, 39.1, 34.8][index]}K views</span>
             </article>
           })}
@@ -286,7 +287,7 @@ export function BrandProducts() {
   </div>
 }
 
-const wizardSteps = ['Basics', 'Timing', 'Brief', 'Review']
+const wizardSteps = ['Brief', 'Timing', 'Review']
 
 function campaignEndFromMonths(start: string, months: number) {
   if (!start || months < 1) return start
@@ -300,7 +301,7 @@ function durationMonths(days: number) {
   return Math.min(12, Math.max(3, Math.round(days / 30) || 3))
 }
 
-function CampaignDurationCalendar({ start, months }: { start: string; months: number }) {
+function CampaignDurationCalendar({ start, months, onSelectMonth }: { start: string; months: number; onSelectMonth: (months: number) => void }) {
   const startDate = new Date(`${start}T00:00:00Z`)
   const endDate = new Date(`${campaignEndFromMonths(start, months)}T00:00:00Z`)
   return <div className="campaign-duration-calendar" aria-label={`${months} month campaign calendar`}>
@@ -313,10 +314,11 @@ function CampaignDurationCalendar({ start, months }: { start: string; months: nu
         const monthIndex = month.getUTCFullYear() * 12 + month.getUTCMonth()
         const endMonthIndex = endDate.getUTCFullYear() * 12 + endDate.getUTCMonth()
         const isWithinCampaign = monthIndex <= endMonthIndex
-        return <span className={isWithinCampaign ? 'selected' : ''} key={`${month.getUTCFullYear()}-${month.getUTCMonth()}`}>
+        const selectedDuration = Math.max(3, index)
+        return <button type="button" className={isWithinCampaign ? 'selected' : ''} key={`${month.getUTCFullYear()}-${month.getUTCMonth()}`} onClick={() => onSelectMonth(selectedDuration)} aria-label={`Set campaign duration to ${selectedDuration} months, ending in ${month.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })} ${month.getUTCFullYear()}`}>
           <small>{month.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })}</small>
           <strong>{month.getUTCFullYear()}</strong>
-        </span>
+        </button>
       })}
     </div>
   </div>
@@ -326,7 +328,7 @@ export function BrandNewOpportunity() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
   const [draft, setDraft] = useState<OpportunityDraft>(state.opportunityDraft)
-  const [step, setStep] = useState(Math.max(1, state.opportunityDraft.step))
+  const [step, setStep] = useState(Math.min(wizardSteps.length, Math.max(1, state.opportunityDraft.step)))
   const [campaignMonthsInput, setCampaignMonthsInput] = useState(() => String(durationMonths(state.opportunityDraft.liveDays)))
   function update(next: Partial<OpportunityDraft>) { setDraft((current) => ({ ...current, ...next })) }
   function updateCampaignMonths(value: number) {
@@ -349,25 +351,22 @@ export function BrandNewOpportunity() {
     }))
   }
   function go(next: number) { const saved = { ...draft, step: next }; setDraft(saved); setStep(next); dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: saved }); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  const product = state.products.find((item) => item.id === draft.productId)
   const campaignMonths = durationMonths(draft.liveDays)
   const typedCampaignMonths = Number(campaignMonthsInput)
   const campaignMonthsInvalid = !Number.isInteger(typedCampaignMonths) || typedCampaignMonths < 3 || typedCampaignMonths > 12
   const campaignEnd = campaignEndFromMonths(draft.liveStart, campaignMonths)
   function finish(mode: 'draft' | 'post') {
-    dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, liveDays: campaignMonths * 30, liveEnd: campaignEnd, step: 4 } })
+    dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, liveDays: campaignMonths * 30, liveEnd: campaignEnd, step: wizardSteps.length } })
     dispatch({ type: 'CREATE_OPPORTUNITY', mode })
     navigate('/brand/opportunities')
   }
   return <div className="wizard-page">
-    <header className="wizard-top"><Link to="/brand/opportunities"><ArrowLeft size={16} />Campaigns</Link><div><span>New campaign</span><strong>{draft.name || 'Untitled campaign'}</strong></div><button className="button button-ghost" onClick={() => { dispatch({ type: 'SAVE_OPPORTUNITY_DRAFT', draft: { ...draft, step } }); navigate('/brand/opportunities') }}>Save & exit</button></header>
     <div className="wizard-stepper">{wizardSteps.map((label, index) => <button key={label} className={step === index + 1 ? 'active' : step > index + 1 ? 'complete' : ''} onClick={() => go(index + 1)}><span>{step > index + 1 ? <Check size={13} /> : index + 1}</span><small>{label}</small></button>)}</div>
     <main className="wizard-body">
-      {step === 1 ? <WizardSection number="01" title="Campaign" description="What are you launching?"><div className="form-grid form-grid-two"><label className="field full"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Product</span><select aria-label="Product" value={draft.productId} onChange={(event) => update({ productId: event.target.value })}>{state.products.filter((item) => item.active).map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label className="field"><span>Platform</span><select aria-label="Platform" value={draft.platform} onChange={(event) => update({ platform: event.target.value })}><option>TikTok</option><option>Instagram Reels</option><option>TikTok + Instagram</option><option>Facebook Reels</option></select></label></div><InfoToast title="How it works">Community Managers claim an allocation, then create promotions for their creators.</InfoToast></WizardSection> : null}
-      {step === 2 ? <WizardSection number="02" title="Campaign commitment" description="Set the duration, content target, and pool."><div className="form-grid form-grid-two campaign-commitment-fields"><div className="field commitment-primary-field"><span>Duration (months)</span><div className={`number-stepper${campaignMonthsInvalid ? ' is-invalid' : ''}`} role="group" aria-label="Duration in months"><button type="button" aria-label="Decrease campaign duration" disabled={campaignMonths <= 3} onClick={() => updateCampaignMonths(campaignMonths - 1)}><Minus size={16} /></button><input aria-label="Duration (months)" type="number" min="3" max="12" required value={campaignMonthsInput} aria-invalid={campaignMonthsInvalid} onChange={(event) => typeCampaignMonths(event.target.value)} /><button type="button" aria-label="Increase campaign duration" disabled={campaignMonths >= 12} onClick={() => updateCampaignMonths(campaignMonths + 1)}><Plus size={16} /></button></div>{campaignMonthsInvalid ? <small className="field-error">Enter a whole number from 3 to 12.</small> : null}</div><label className="field commitment-primary-field"><span>Target</span><div className="input-suffix"><input aria-label="Target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><div className="full"><CampaignDurationCalendar start={draft.liveStart} months={campaignMonths} /></div><label className="field full"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label></div></WizardSection> : null}
-      {step === 3 ? <WizardSection number="03" title="Campaign brief" description="Set the direction Community Managers will use for promotions."><div className="form-grid"><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
-      {step === 4 ? <WizardSection number="04" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><p>{product?.name}</p><div className="tag-row"><span>{draft.platform}</span></div><div className="review-sections"><section><span className="review-icon"><Clock3 size={28} /></span><div><span>Campaign duration</span><strong>{formatDate(draft.liveStart)} – {formatDate(campaignEnd)}</strong><small>{campaignMonths} months</small></div></section><section><span className="review-icon"><Target size={28} /></span><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><span className="review-icon"><WalletCards size={28} /></span><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><div className="launch-actions"><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></div></aside></div></WizardSection> : null}
-      <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < 4 ? <button className="button button-primary" disabled={step === 2 && campaignMonthsInvalid} onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
+      {step === 1 ? <WizardSection number="01" title="Campaign brief" description="Set the direction Community Managers will use for promotions."><div className="form-grid"><label className="field"><span>Campaign name</span><input aria-label="Campaign name" value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Real Skin, Real Routine" /></label><label className="field"><span>Brief</span><textarea aria-label="Brief" rows={5} value={draft.contentDirection} onChange={(event) => update({ contentDirection: event.target.value })} /></label><label className="field"><span>Required hashtags</span><div className="field-icon"><Hash size={15} /><input aria-label="Required hashtags" value={draft.hashtags.join(', ')} onChange={(event) => update({ hashtags: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} /></div></label></div></WizardSection> : null}
+      {step === 2 ? <WizardSection number="02" title="Campaign commitment" description="Set the duration, content target, and pool."><div className="form-grid form-grid-two campaign-commitment-fields"><label className="field full campaign-pool-field"><span>Pool value</span><div className="money-input"><span>₱</span><input aria-label="Pool value" type="number" min="1" step="1000" value={draft.totalBudget} onChange={(event) => update({ totalBudget: Number(event.target.value) })} /></div></label><div className="field commitment-primary-field"><span>Duration (months)</span><div className={`number-stepper${campaignMonthsInvalid ? ' is-invalid' : ''}`} role="group" aria-label="Duration in months"><button type="button" aria-label="Decrease campaign duration" disabled={campaignMonths <= 3} onClick={() => updateCampaignMonths(campaignMonths - 1)}><Minus size={16} /></button><input aria-label="Duration (months)" type="number" min="3" max="12" required value={campaignMonthsInput} aria-invalid={campaignMonthsInvalid} onChange={(event) => typeCampaignMonths(event.target.value)} /><button type="button" aria-label="Increase campaign duration" disabled={campaignMonths >= 12} onClick={() => updateCampaignMonths(campaignMonths + 1)}><Plus size={16} /></button></div>{campaignMonthsInvalid ? <small className="field-error">Enter a whole number from 3 to 12.</small> : null}</div><label className="field commitment-primary-field"><span>Target</span><div className="input-suffix"><input aria-label="Target" type="number" min="1" value={draft.requiredContent} onChange={(event) => update({ requiredContent: Number(event.target.value) })} /><span>posts</span></div></label><div className="full"><CampaignDurationCalendar start={draft.liveStart} months={campaignMonths} onSelectMonth={updateCampaignMonths} /></div></div></WizardSection> : null}
+      {step === 3 ? <WizardSection number="03" title="Review and post" description="Check the essentials."><div className="review-grid"><div className="review-card"><span className="eyebrow">CAMPAIGN</span><h2>{draft.name || 'Untitled campaign'}</h2><div className="review-sections"><section><span className="review-icon"><CalendarDays size={22} /></span><div><span>Campaign duration</span><strong className="review-duration-value">{campaignMonths} months</strong><small>{formatDate(draft.liveStart)} – {formatDate(campaignEnd)}</small></div></section><section><span className="review-icon"><Target size={22} /></span><div><span>Content target</span><strong>{draft.requiredContent} posts</strong></div></section><section><span className="review-icon"><WalletCards size={22} /></span><div><span>Pool value</span><strong>{formatCurrency(draft.totalBudget)}</strong></div></section></div></div><aside className="launch-panel"><Sparkles size={22} /><h3>Ready to post</h3><dl><div><dt>Content target</dt><dd>{draft.requiredContent}</dd></div><div><dt>Pool value</dt><dd>{formatCurrency(draft.totalBudget)}</dd></div></dl><div className="launch-actions"><button className="button button-primary button-block" onClick={() => finish('post')}><Send size={16} />Post</button><button className="button button-secondary button-block" onClick={() => finish('draft')}>Save as draft</button></div></aside></div></WizardSection> : null}
+      <footer className="wizard-actions"><button className="button button-secondary" disabled={step === 1} onClick={() => go(step - 1)}><ArrowLeft size={16} />Back</button><span>Step {step} of {wizardSteps.length}</span>{step < wizardSteps.length ? <button className="button button-primary" disabled={step === 2 && campaignMonthsInvalid} onClick={() => go(step + 1)}>Continue<ArrowRight size={16} /></button> : <Link className="button button-secondary" to="/brand/opportunities">Cancel</Link>}</footer>
     </main>
   </div>
 }
@@ -410,35 +409,55 @@ export function BrandOpportunities() {
       {campaigns.map((campaign) => {
         const budgetProgress = campaign.budget ? Math.round(campaign.spent / campaign.budget * 100) : 0
         const contentProgress = campaign.target ? Math.round(campaign.published / campaign.target * 100) : 0
+        const promotions = madridPromotions.filter((promotion) => promotion.campaignId === campaign.id)
+        const analytics = promotions.reduce((totals, promotion) => ({
+          views: totals.views + promotion.views,
+          clicks: totals.clicks + promotion.clicks,
+          engagement: totals.engagement + promotion.engagement,
+        }), { views: 0, clicks: 0, engagement: 0 })
         return <details className="campaign-portfolio-card" key={campaign.id}>
           <summary>
             <img src={campaign.src} alt="" />
             <div className="campaign-portfolio-summary">
-              <span>Madrid Philippines</span>
               <h2>{campaign.name}</h2>
+              <span>Madrid Philippines</span>
+              <div className="campaign-portfolio-allocation"><span>Allocated</span><strong>{formatCurrency(campaign.budget)}</strong></div>
               <dl>
-                <div><dt>Allocated</dt><dd>{formatCurrency(campaign.budget)}</dd></div>
-                <div><dt>Content target</dt><dd>{campaign.target}</dd></div>
+                <div><dt>Target</dt><dd>{campaign.target}</dd></div>
                 <div><dt>Duration</dt><dd>{campaign.weeks} weeks</dd></div>
               </dl>
             </div>
             <span className="campaign-portfolio-toggle"><ChevronDown size={18} /></span>
           </summary>
           <div className="campaign-portfolio-current">
-            <div>
-              <span>Spent</span>
-              <strong>{formatCurrency(campaign.spent)} <small>/ {formatCurrency(campaign.budget)}</small></strong>
-              <ProgressBar value={budgetProgress} />
-            </div>
-            <div>
-              <span>Published</span>
-              <strong>{campaign.published} <small>/ {campaign.target}</small></strong>
-              <ProgressBar value={contentProgress} />
-            </div>
-            <div>
-              <span>Current week</span>
-              <strong>{campaign.currentWeek} <small>/ {campaign.weeks}</small></strong>
-            </div>
+            <section className="campaign-portfolio-progress" aria-label="Campaign progress">
+              <div>
+                <span>Spent</span>
+                <strong>{formatCurrency(campaign.spent)} <small>/ {formatCurrency(campaign.budget)}</small></strong>
+                <ProgressBar value={budgetProgress} />
+              </div>
+              <div>
+                <span>Published</span>
+                <strong>{campaign.published} <small>/ {campaign.target}</small></strong>
+                <ProgressBar value={contentProgress} />
+              </div>
+              <div>
+                <span>Current week</span>
+                <strong>{campaign.currentWeek} <small>/ {campaign.weeks}</small></strong>
+              </div>
+            </section>
+            <section className="campaign-portfolio-brief">
+              <span className="eyebrow">Campaign brief</span>
+              <p>{campaign.goal}</p>
+            </section>
+            <section className="campaign-portfolio-analytics" aria-label="Campaign analytics">
+              <span className="eyebrow">Analytics</span>
+              <dl>
+                <div><dt>Views</dt><dd>{formatNumber(analytics.views)}</dd></div>
+                <div><dt>Clicks</dt><dd>{formatNumber(analytics.clicks)}</dd></div>
+                <div><dt>Engagement</dt><dd>{formatNumber(analytics.engagement)}</dd></div>
+              </dl>
+            </section>
             {campaign.to ? <Link className="campaign-portfolio-link" to={campaign.to}>View campaign <ArrowRight size={15} /></Link> : null}
           </div>
         </details>

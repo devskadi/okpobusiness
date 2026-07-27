@@ -265,7 +265,7 @@ export const initialState: AppState = {
     id: 'brand-dermorepubliq', name: 'Dermorepubliq', initials: 'DR', website: 'https://dermorepubliq.com',
     industry: 'Skincare & beauty', location: 'Philippines',
     description: 'Science-led, accessible skincare designed for straightforward everyday routines.',
-    contactName: 'Alexis Tan', contactEmail: 'alexis@dermorepubliq.com',
+    contactName: 'Cloud', contactEmail: 'alexis@dermorepubliq.com',
   },
   products,
   communities,

@@ -10,7 +10,7 @@ import { useApp } from './store'
 import type { ProfileRole } from './types'
 
 const roleMeta = {
-  brand: { label: 'Brand Representative', short: 'Brand', description: 'Dermorepubliq', initials: 'AT', name: 'Alexis Tan' },
+  brand: { label: 'Brand Representative', short: 'Brand', description: 'Madrid Philippines', initials: 'C', name: 'Cloud' },
   leader: { label: 'Community Manager', short: 'Manager', description: 'SkinTok PH', initials: 'MV', name: 'Mara Villanueva' },
   member: { label: 'Community Member', short: 'Member', description: 'SkinTok PH', initials: 'MR', name: 'Maya Reyes' },
 } satisfies Record<ProfileRole, { label: string; short: string; description: string; initials: string; name: string }>
@@ -90,8 +90,8 @@ export function AppShell() {
     <div className="main-shell">
       <header className="topbar">
         <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-        {isBrandDashboard
-          ? <div className="topbar-context brand-topbar-context"><img src="https://framerusercontent.com/images/9vztxpI94HrnaoU9MkMpqefg0o.png" alt="Madrid Philippines" /><h1>Good morning, Alexis</h1></div>
+        {activeRole === 'brand'
+          ? <div className="topbar-context brand-topbar-context"><img src="/assets/madrid-philippines-logo.png" alt="Madrid Philippines" /><h1>{isBrandDashboard ? `Good morning, ${meta.name}` : meta.label}</h1></div>
           : <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>}
         <div className="topbar-actions">
           <button className="icon-button notification-button" aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}><Bell size={18} />{notices.some((item) => !item.read) ? <i /> : null}</button>

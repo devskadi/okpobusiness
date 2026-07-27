@@ -157,6 +157,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .dashboard-top-content img { width: 100%; height: 100%; object-fit: cover; }
 .dashboard-top-content article > span { position: absolute; left: 6px; bottom: 6px; padding: 4px 7px; border-radius: 999px; background: rgba(17, 17, 17, .78); color: #fff; font-size: 7px; font-weight: 800; backdrop-filter: blur(5px); }
 .pool-card { min-height: 118px; padding: 15px 19px; }
+.pool-card > .metric-top { justify-content: flex-end; }
 .pool-card-values { margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pool-card-values > div { min-width: 0; display: grid; gap: 5px; }
 .pool-card-values > div + div { padding-left: 20px; border-left: 1px solid var(--line); }
@@ -433,7 +434,7 @@ td > strong { color: var(--ink); }
 .wizard-top > div span { color: var(--soft-muted); font-size: 8px; }
 .wizard-top > div strong { margin-top: 3px; font-size: 11px; }
 .wizard-top > button { justify-self: end; }
-.wizard-stepper { margin: 0 calc(-1 * clamp(24px, 3.2vw, 50px)); padding: 18px max(50px, calc((100% - 970px) / 2)); border-block: 1px solid var(--line); background: #fff; display: grid; grid-template-columns: repeat(4, 1fr); }
+.wizard-stepper { margin: 0 calc(-1 * clamp(24px, 3.2vw, 50px)); padding: 18px max(50px, calc((100% - 970px) / 2)); border-block: 1px solid var(--line); background: #fff; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .wizard-stepper button { position: relative; border: 0; background: transparent; color: var(--soft-muted); display: grid; justify-items: center; gap: 7px; font-size: 9px; cursor: pointer; }
 .wizard-stepper button:before { content: ''; position: absolute; z-index: 0; top: 14px; left: 0; right: 0; height: 1px; background: var(--line); }
 .wizard-stepper button:first-child:before { left: 50%; }
@@ -456,10 +457,11 @@ td > strong { color: var(--ink); }
 .review-card h2 { margin: 8px 0 6px; font-size: 26px; }
 .review-card > p { color: var(--muted); font-size: 11px; }
 .review-sections { margin-top: 24px; display: grid; gap: 12px; }
-.review-sections > section { padding-top: 13px; border-top: 1px solid #ddddD4; display: grid; grid-template-columns: auto 1fr; gap: 11px; }
+.review-sections > section { padding-top: 13px; border-top: 1px solid #ddddD4; display: grid; grid-template-columns: auto 1fr; gap: 11px; align-items: center; }
 .review-sections span, .review-sections strong, .review-sections small { display: block; }
 .review-sections span { color: var(--muted); font-size: 9px; }
 .review-sections strong { margin-top: 3px; font-size: 11px; }
+.review-sections .review-duration-value { font-size: 17px; line-height: 1; }
 .review-sections small { margin-top: 3px; color: var(--soft-muted); font-size: 8px; }
 .launch-panel, .claim-panel { padding: 23px; border-radius: 13px; background: var(--ink); color: #fff; }
 .launch-panel { min-height: 100%; display: flex; flex-direction: column; }
@@ -549,21 +551,32 @@ td > strong { color: var(--ink); }
 .campaign-portfolio-card > summary::-webkit-details-marker { display: none; }
 .campaign-portfolio-card > summary > img { width: 176px; height: 176px; object-fit: cover; }
 .campaign-portfolio-summary { min-width: 0; padding: 19px 10px 17px 20px; display: flex; flex-direction: column; }
-.campaign-portfolio-summary > span { color: var(--muted); font-size: 9px; }
-.campaign-portfolio-summary h2 { margin: 5px 0 0; font-size: clamp(18px, 2vw, 27px); line-height: 1.06; letter-spacing: -.04em; }
-.campaign-portfolio-summary dl { margin: auto 0 0; display: grid; grid-template-columns: 1.15fr .9fr .9fr; gap: 12px; }
+.campaign-portfolio-summary > span { margin-top: 4px; color: var(--muted); font-size: 9px; }
+.campaign-portfolio-summary h2 { margin: 0; font-size: clamp(18px, 2vw, 27px); line-height: 1.06; letter-spacing: -.04em; }
+.campaign-portfolio-allocation { margin-top: auto; display: grid; gap: 5px; }
+.campaign-portfolio-allocation > span { color: var(--soft-muted); font-size: 7px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.campaign-portfolio-allocation > strong { font-size: clamp(22px, 2.5vw, 34px); line-height: .95; letter-spacing: -.05em; }
+.campaign-portfolio-summary dl { margin: 12px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .campaign-portfolio-summary dl div { min-width: 0; }
 .campaign-portfolio-summary dt, .campaign-portfolio-summary dd { margin: 0; }
 .campaign-portfolio-summary dt { margin-bottom: 4px; color: var(--soft-muted); font-size: 7px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .campaign-portfolio-summary dd { overflow: hidden; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .campaign-portfolio-toggle { width: 34px; height: 34px; margin: 14px 14px 0 0; border-radius: 9px; background: var(--cream); display: grid; place-items: center; transition: transform .18s ease; }
 .campaign-portfolio-card[open] .campaign-portfolio-toggle { transform: rotate(180deg); }
-.campaign-portfolio-current { padding: 16px 18px 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.campaign-portfolio-current > div { min-width: 0; }
-.campaign-portfolio-current > div > span { color: var(--muted); display: block; font-size: 8px; font-weight: 750; }
-.campaign-portfolio-current > div > strong { margin-top: 5px; display: block; font-size: 14px; line-height: 1.15; }
-.campaign-portfolio-current > div > strong small { color: var(--muted); font-size: 9px; font-weight: 650; }
-.campaign-portfolio-current .progress-wrap { margin-top: 10px; }
+.campaign-portfolio-current { padding: 16px 18px 18px; border-top: 1px solid var(--line); display: grid; gap: 18px; }
+.campaign-portfolio-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.campaign-portfolio-progress > div { min-width: 0; }
+.campaign-portfolio-progress > div > span { color: var(--muted); display: block; font-size: 8px; font-weight: 750; }
+.campaign-portfolio-progress > div > strong { margin-top: 5px; display: block; font-size: 18px; line-height: 1.05; }
+.campaign-portfolio-progress > div > strong small { color: var(--muted); font-size: 10px; font-weight: 650; }
+.campaign-portfolio-progress .progress-wrap { margin-top: 10px; }
+.campaign-portfolio-brief, .campaign-portfolio-analytics { padding-top: 16px; border-top: 1px solid var(--line); }
+.campaign-portfolio-brief p { margin: 7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.campaign-portfolio-analytics dl { margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.campaign-portfolio-analytics dl > div { padding: 11px; border-radius: 9px; background: var(--cream); }
+.campaign-portfolio-analytics dt, .campaign-portfolio-analytics dd { margin: 0; }
+.campaign-portfolio-analytics dt { color: var(--muted); font-size: 7px; text-transform: uppercase; letter-spacing: .08em; }
+.campaign-portfolio-analytics dd { margin-top: 4px; font-size: 15px; font-weight: 850; }
 .campaign-portfolio-link { grid-column: 1 / -1; width: max-content; color: var(--ink); display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; }
 
 .workspace-page { gap: 16px; }
@@ -862,12 +875,12 @@ td > strong { color: var(--ink); }
 .duration-calendar-heading > div { display: grid; gap: 3px; }
 .duration-calendar-heading small { color: var(--muted); font-size: 9px; }
 .duration-months { margin-top: 14px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.duration-months span { padding: 9px 6px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--soft-muted); text-align: center; }
-.duration-months span.selected { border-color: #d8ae00; background: var(--yellow-soft); color: var(--ink); }
+.duration-months button { padding: 9px 6px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--soft-muted); font: inherit; text-align: center; cursor: pointer; }
+.duration-months button.selected { border-color: #d8ae00; background: var(--yellow-soft); color: var(--ink); }
 .duration-months small, .duration-months strong { display: block; }
 .duration-months small { font-size: 8px; text-transform: uppercase; }
 .duration-months strong { margin-top: 2px; font-size: 9px; }
-.review-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--yellow-soft); color: var(--ink); display: grid; place-items: center; flex: 0 0 48px; }
+.review-icon { width: 44px; height: 44px; border-radius: 11px; background: var(--yellow-soft); color: var(--ink); display: grid; place-items: center; flex: 0 0 44px; }
 .brand-analytics-page { gap: 22px; }
 .report-campaign-section { display: grid; gap: 14px; }
 .report-campaign-section > header, .promotion-drill-list > header { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
@@ -950,21 +963,30 @@ td > strong { color: var(--ink); }
   .opportunity-card-mobile { display: block; }
   .campaign-portfolio { gap: 10px; }
   .campaign-portfolio-card { border-radius: 12px; }
-  .campaign-portfolio-card > summary { min-height: 118px; grid-template-columns: 118px minmax(0, 1fr) auto; }
-  .campaign-portfolio-card > summary > img { width: 118px; height: 118px; }
+  .campaign-portfolio-card > summary { min-height: 180px; grid-template-columns: 180px minmax(0, 1fr) auto; }
+  .campaign-portfolio-card > summary > img { width: 180px; height: 180px; }
   .campaign-portfolio-summary { padding: 12px 5px 11px 12px; }
   .campaign-portfolio-summary > span { font-size: 7px; }
   .campaign-portfolio-summary h2 { margin-top: 3px; font-size: 16px; }
-  .campaign-portfolio-summary dl { gap: 7px; }
+  .campaign-portfolio-allocation { gap: 4px; }
+  .campaign-portfolio-allocation > span { font-size: 6px; }
+  .campaign-portfolio-allocation > strong { font-size: 25px; }
+  .campaign-portfolio-summary dl { margin-top: 10px; gap: 12px; }
   .campaign-portfolio-summary dt { margin-bottom: 2px; font-size: 6px; letter-spacing: .08em; }
   .campaign-portfolio-summary dd { font-size: 9px; }
   .campaign-portfolio-toggle { width: 26px; height: 26px; margin: 8px 8px 0 0; border-radius: 7px; }
   .campaign-portfolio-toggle svg { width: 14px; height: 14px; }
-  .campaign-portfolio-current { padding: 13px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
-  .campaign-portfolio-current > div > span { font-size: 7px; }
-  .campaign-portfolio-current > div > strong { font-size: 11px; }
-  .campaign-portfolio-current > div > strong small { display: block; margin-top: 2px; font-size: 7px; }
-  .campaign-portfolio-current .progress-wrap { margin-top: 7px; }
+  .campaign-portfolio-current { padding: 15px; gap: 15px; }
+  .campaign-portfolio-progress { gap: 10px; }
+  .campaign-portfolio-progress > div > span { font-size: 7px; }
+  .campaign-portfolio-progress > div > strong { font-size: 17px; }
+  .campaign-portfolio-progress > div > strong small { display: block; margin-top: 4px; font-size: 9px; }
+  .campaign-portfolio-progress .progress-wrap { margin-top: 9px; }
+  .campaign-portfolio-brief, .campaign-portfolio-analytics { padding-top: 14px; }
+  .campaign-portfolio-brief p { font-size: 9px; }
+  .campaign-portfolio-analytics dl { gap: 7px; }
+  .campaign-portfolio-analytics dl > div { padding: 9px 8px; }
+  .campaign-portfolio-analytics dd { font-size: 13px; }
   .campaign-portfolio-link { font-size: 9px; }
   .content-table-desktop { display: none; }
   .content-mobile-campaign { display: block; }
@@ -1059,11 +1081,13 @@ td > strong { color: var(--ink); }
   .activity-row { grid-template-columns: auto 1fr; }
   .activity-row time { grid-column: 2; }
   .form-grid-two { grid-template-columns: 1fr; }
-  .campaign-commitment-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; }
+  .campaign-commitment-fields { margin-top: -12px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; }
   .campaign-commitment-fields .full { grid-column: 1 / -1; }
   .campaign-commitment-fields .field > span { min-height: 28px; display: flex; align-items: end; }
   .campaign-commitment-fields .number-stepper { grid-template-columns: 34px minmax(0, 1fr) 34px; }
   .field.full, .full { grid-column: 1; }
+  .campaign-commitment-fields > .full { grid-column: 1 / -1; }
+  .campaign-commitment-fields > .campaign-pool-field { margin-bottom: -6px; }
   .wizard-page { margin: -24px auto -55px; }
   .wizard-stepper { margin-inline: -14px; padding-inline: 14px; }
   .wizard-top { grid-template-columns: auto 1fr auto; }
@@ -1137,6 +1161,8 @@ td > strong { color: var(--ink); }
   .metric-card { min-height: 106px; padding: 13px; }
   .metric-top > i { display: none; }
   .metric-card > strong { font-size: 22px; }
+  .report-summary-metrics .metric-card { min-height: 72px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+  .report-summary-metrics .metric-card > strong { margin: 0; text-align: right; }
   .hero-title { align-items: start; flex-direction: column; }
   .hero-title h2 { font-size: 30px; }
   .campaign-list-row { grid-template-columns: auto 1fr; }
