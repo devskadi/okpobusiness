@@ -30,8 +30,8 @@ export function MetricCard({ label, value, detail, icon: Icon, tone = 'plain', c
   return <article className={`metric-card metric-${tone} ${className}`}><div className="metric-top"><span>{label}</span>{Icon ? <i><Icon size={18} /></i> : null}</div><strong>{value}</strong>{detail ? <small>{detail}</small> : null}</article>
 }
 
-export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
-  return <header className="page-header"><div>{eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}<h1>{title}</h1>{description ? <p>{description}</p> : null}</div>{actions ? <div className="page-actions">{actions}</div> : null}</header>
+export function PageHeader({ eyebrow, title, titleAccessory, description, actions }: { eyebrow?: string; title: string; titleAccessory?: ReactNode; description?: string; actions?: ReactNode }) {
+  return <header className="page-header"><div>{eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}<div className="page-header-title-row"><h1>{title}</h1>{titleAccessory}</div>{description ? <p>{description}</p> : null}</div>{actions ? <div className="page-actions">{actions}</div> : null}</header>
 }
 
 export function Panel({ title, description, action, children, className = '' }: { title?: string; description?: string; action?: ReactNode; children: ReactNode; className?: string }) {

@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from './AppShell'
 import {
   BrandContent, BrandDashboard, BrandNewOpportunity, BrandOpportunities,
-  BrandOpportunityWorkspace, BrandProducts, BrandProfilePage, BrandReports,
+  BrandCampaignDetail, BrandNotifications, BrandOpportunityWorkspace, BrandProducts, BrandProfilePage, BrandReports, BrandSettings,
 } from './pages/BrandPages'
 import {
   LeaderBudget, LeaderCampaigns, LeaderCampaignWorkspace, LeaderCommunityProfile, LeaderContent,
@@ -27,10 +27,13 @@ export function App() {
       <Route path="/brand/opportunities" element={<BrandOpportunities />} />
       <Route path="/brand/opportunities/new" element={<BrandNewOpportunity />} />
       <Route path="/brand/opportunities/:opportunityId" element={<BrandOpportunityWorkspace />} />
+      <Route path="/brand/campaigns/:campaignId" element={<BrandCampaignDetail />} />
       <Route path="/brand/communities" element={<Navigate to="/brand/opportunities/opportunity-real-skin?tab=communities" replace />} />
       <Route path="/brand/content" element={<BrandContent />} />
       <Route path="/brand/reports" element={<BrandReports />} />
+      <Route path="/brand/notifications" element={<BrandNotifications />} />
       <Route path="/brand/profile" element={<BrandProfilePage />} />
+      <Route path="/brand/settings" element={<BrandSettings />} />
 
       <Route path="/leader" element={<LeaderDashboard />} />
       <Route path="/leader/opportunities" element={<LeaderOpportunities />} />

@@ -1,9 +1,10 @@
 import {
-  ArrowLeft, ArrowRight, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown,
-  Eye, FileCheck2, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
-  Minus, Pencil, Plus, Send, Sparkles, Target, Users, WalletCards,
+  ArrowLeft, ArrowRight, BadgeCheck, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
+  Eye, FileCheck2, Film, Flag, Grid2X2, Hash, Layers3, List, MousePointerClick, Package, Percent,
+  Minus, Pencil, Plus, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Avatar, Callout, ContentBadge, EmptyState, InfoToast, MetricCard, PageHeader, Panel, ProgressBar,
@@ -19,6 +20,21 @@ function opportunityBudgetUsed(state: ReturnType<typeof useApp>['state'], opport
     const metrics = getCommunityCampaignMetrics(state, campaign.id)
     return total + Math.round(campaign.rewardBudget * metrics.counted / Math.max(1, campaign.contentQuota))
   }, 0)
+}
+
+function ordinal(value: number) {
+  const mod100 = value % 100
+  if (mod100 >= 11 && mod100 <= 13) return `${value}th`
+  if (value % 10 === 1) return `${value}st`
+  if (value % 10 === 2) return `${value}nd`
+  if (value % 10 === 3) return `${value}rd`
+  return `${value}th`
+}
+
+function TikTokMark({ size = 15 }: { size?: number }) {
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03a10.4 10.4 0 0 1-4.2-.97c-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75a7.12 7.12 0 0 1-1.35 3.94A7.35 7.35 0 0 1 9.33 24a7.18 7.18 0 0 1-4.08-1.03 7.4 7.4 0 0 1-3.65-5.72c-.02-.5-.03-1-.01-1.49a7.42 7.42 0 0 1 2.58-4.96 7.2 7.2 0 0 1 6.15-1.74c.02 1.48-.04 2.96-.04 4.44a3.37 3.37 0 0 0-3.02.37 3.08 3.08 0 0 0-1.36 1.75c-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87a3.25 3.25 0 0 0 2.77-1.61c.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.05Z" />
+  </svg>
 }
 
 type FeaturedCampaign = MadridCampaign
@@ -382,6 +398,8 @@ function WizardSection({ number, title, description, children }: { number: strin
 
 export function BrandOpportunities() {
   const { state } = useApp()
+  const navigate = useNavigate()
+  const [layout, setLayout] = useState<'large' | 'compact'>('large')
   const createdCampaigns: Array<MadridCampaign & { to: string }> = state.opportunities
     .filter((opportunity) => !legacyDemoOpportunityIds.has(opportunity.id))
     .map((opportunity, index) => {
@@ -403,71 +421,271 @@ export function BrandOpportunities() {
     })
   const campaigns: Array<MadridCampaign & { to?: string }> = [...createdCampaigns, ...madridCampaigns]
 
+  const openCampaign = (event: React.MouseEvent<HTMLAnchorElement>, campaign: MadridCampaign & { to?: string }) => {
+    const destination = campaign.to ?? `/brand/campaigns/${campaign.id}`
+    const isPlainPointerClick = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
+    const prefersReducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (typeof window.matchMedia !== 'function' || !isPlainPointerClick || event.detail === 0 || prefersReducedMotion || !destination.startsWith('/brand/campaigns/')) return
+
+    const image = event.currentTarget.querySelector('img')
+    const pageContainer = document.querySelector<HTMLElement>('.page-container')
+    const topbar = document.querySelector<HTMLElement>('.topbar')
+    if (!image || !pageContainer || !topbar) return
+
+    event.preventDefault()
+    const source = image.getBoundingClientRect()
+    const page = pageContainer.getBoundingClientRect()
+    const pageStyles = window.getComputedStyle(pageContainer)
+    const isMobile = window.matchMedia('(max-width: 680px)').matches
+    const paddingLeft = isMobile ? 0 : Number.parseFloat(pageStyles.paddingLeft)
+    const paddingRight = isMobile ? 0 : Number.parseFloat(pageStyles.paddingRight)
+    const paddingTop = isMobile ? 0 : Number.parseFloat(pageStyles.paddingTop)
+    const targetLeft = page.left + paddingLeft
+    const targetTop = topbar.getBoundingClientRect().bottom + paddingTop
+    const targetWidth = page.width - paddingLeft - paddingRight
+    const targetHeight = isMobile ? targetWidth : targetWidth * 8.5 / 16
+    const overlay = image.cloneNode() as HTMLImageElement
+
+    overlay.className = 'campaign-cover-transition-overlay'
+    overlay.alt = ''
+    overlay.setAttribute('aria-hidden', 'true')
+    document.body.appendChild(overlay)
+    gsap.set(overlay, {
+      left: targetLeft,
+      top: targetTop,
+      width: targetWidth,
+      height: targetHeight,
+      x: source.left - targetLeft,
+      y: source.top - targetTop,
+      scaleX: source.width / targetWidth,
+      scaleY: source.height / targetHeight,
+      borderRadius: window.getComputedStyle(image).borderRadius,
+      transformOrigin: 'top left',
+    })
+
+    gsap.to(overlay, {
+      x: 0,
+      y: 0,
+      scaleX: 1,
+      scaleY: 1,
+      borderRadius: 0,
+      duration: 0.38,
+      ease: 'power3.inOut',
+      overwrite: true,
+      onComplete: () => {
+        const root = document.documentElement
+        const previousScrollBehavior = root.style.scrollBehavior
+        root.style.scrollBehavior = 'auto'
+        window.scrollTo(0, 0)
+        navigate(destination)
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          overlay.remove()
+          root.style.scrollBehavior = previousScrollBehavior
+        }))
+      },
+      onInterrupt: () => overlay.remove(),
+    })
+  }
+
   return <div className="page-stack">
     <PageHeader
       eyebrow="MADRID PHILIPPINES"
       title="Campaign portfolio"
+      titleAccessory={<div className="campaign-layout-toggle" role="group" aria-label="Campaign layout">
+        <button type="button" aria-label="Large campaign cards" aria-pressed={layout === 'large'} onClick={() => setLayout('large')}><Grid2X2 size={17} /></button>
+        <button type="button" aria-label="Compact campaign list" aria-pressed={layout === 'compact'} onClick={() => setLayout('compact')}><List size={18} /></button>
+      </div>}
       description="Track allocation, publishing, and timing in one place."
       actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New campaign</Link>}
     />
-    <section className="campaign-portfolio" aria-label="Madrid Philippines campaigns">
-      {campaigns.map((campaign) => {
-        const budgetProgress = campaign.budget ? Math.round(campaign.spent / campaign.budget * 100) : 0
-        const contentProgress = campaign.target ? Math.round(campaign.published / campaign.target * 100) : 0
-        const promotions = madridPromotions.filter((promotion) => promotion.campaignId === campaign.id)
-        const analytics = promotions.reduce((totals, promotion) => ({
-          views: totals.views + promotion.views,
-          clicks: totals.clicks + promotion.clicks,
-          earnings: totals.earnings + promotion.earnings,
-        }), { views: 0, clicks: 0, earnings: 0 })
-        return <details className="campaign-portfolio-card" key={campaign.id}>
-          <summary>
-            <img src={campaign.src} alt="" />
-            <div className="campaign-portfolio-summary">
-              <h2>{campaign.name}</h2>
-              <span>Madrid Philippines</span>
-              <div className="campaign-portfolio-allocation"><span>Allocated</span><strong>{formatCurrency(campaign.budget)}</strong></div>
-              <dl>
-                <div><dt>Target</dt><dd>{campaign.target}</dd></div>
-                <div><dt>Duration</dt><dd>{campaign.weeks} weeks</dd></div>
-              </dl>
-            </div>
-            <span className="campaign-portfolio-toggle"><ChevronDown size={18} /></span>
-          </summary>
-          <div className="campaign-portfolio-current">
-            <section className="campaign-portfolio-progress" aria-label="Campaign progress">
-              <div>
-                <span>Spent</span>
-                <strong>{formatCurrency(campaign.spent)} <small>/ {formatCurrency(campaign.budget)}</small></strong>
-                <ProgressBar value={budgetProgress} />
-              </div>
-              <div>
-                <span>Published</span>
-                <strong>{campaign.published} <small>/ {campaign.target}</small></strong>
-                <ProgressBar value={contentProgress} />
-              </div>
-              <div>
-                <span>Current week</span>
-                <strong>{campaign.currentWeek} <small>/ {campaign.weeks}</small></strong>
-              </div>
-            </section>
-            <section className="campaign-portfolio-brief">
-              <span className="eyebrow">Campaign brief</span>
-              <p>{campaign.goal}</p>
-            </section>
-            <section className="campaign-portfolio-analytics" aria-label="Campaign analytics">
-              <span className="eyebrow">Analytics</span>
-              <dl>
-                <div><dt>Views</dt><dd>{formatNumber(analytics.views)}</dd></div>
-                <div><dt>Clicks</dt><dd>{formatNumber(analytics.clicks)}</dd></div>
-                <div><dt>Earnings</dt><dd>{formatCurrency(analytics.earnings)}</dd></div>
-              </dl>
-            </section>
-            {campaign.to ? <Link className="campaign-portfolio-link" to={campaign.to}>View campaign <ArrowRight size={15} /></Link> : null}
-          </div>
-        </details>
-      })}
+    <section className={`campaign-portfolio campaign-portfolio-${layout}`} aria-label="Madrid Philippines campaigns">
+      {campaigns.map((campaign) => <Link
+        className="campaign-listing-card"
+        to={campaign.to ?? `/brand/campaigns/${campaign.id}`}
+        key={campaign.id}
+        onClick={(event) => openCampaign(event, campaign)}
+      >
+        <img src={campaign.src} alt="" />
+        <div>
+          <header><div><h2 aria-label={campaign.name}>{campaign.name} <span>· {ordinal(campaign.currentWeek)} cycle</span></h2><span>Madrid Philippines</span></div><strong aria-label={`Target ${campaign.target}`}><Target size={16} aria-hidden="true" /><span className="campaign-listing-target-value">{campaign.target}</span><span className="campaign-listing-target-label">to post</span></strong></header>
+          <div className="campaign-listing-pool"><strong><span aria-hidden="true">🤑</span>{formatCurrency(campaign.budget)} <span>for</span> <span className="campaign-listing-duration" aria-label={`${campaign.weeks} weeks`}>{campaign.weeks} weeks</span></strong></div>
+        </div>
+      </Link>)}
     </section>
+  </div>
+}
+
+const campaignCreators = [
+  { name: 'Ralph Mallari Chua', handle: '@ralphcreates', avatar: '/assets/madrid-performer-1.jpeg', engagement: 18420 },
+  { name: 'Cris Naigan', handle: '@crisnaigan', avatar: '/assets/madrid-performer-2.jpeg', engagement: 16380 },
+  { name: 'Julius Balatbat', handle: '@juliusmoves', avatar: '/assets/madrid-rider-1.jpeg', engagement: 14960 },
+  { name: 'Renato Jr. Unday', handle: '@renatounday', avatar: '/assets/madrid-rider-2.jpeg', engagement: 12740 },
+  { name: 'Ryan De Vera', handle: '@ryanbuilds', avatar: '/assets/user-portrait.png', engagement: 10890 },
+  { name: 'Dominic Castillo', handle: '@dominiccreates', avatar: '/assets/madrid-performer-1.jpeg', engagement: 9860 },
+  { name: 'Angela Ramos', handle: '@angelaramos', avatar: '/assets/madrid-performer-2.jpeg', engagement: 8740 },
+  { name: 'Paolo Mendoza', handle: '@paolomoves', avatar: '/assets/madrid-rider-1.jpeg', engagement: 7690 },
+  { name: 'Bianca Santos', handle: '@biancastories', avatar: '/assets/madrid-rider-2.jpeg', engagement: 6840 },
+  { name: 'Miguel Reyes', handle: '@miguelreyes', avatar: '/assets/user-portrait.png', engagement: 5920 },
+]
+
+export function BrandCampaignDetail() {
+  const { campaignId } = useParams()
+  const campaign = madridCampaigns.find((item) => item.id === campaignId)
+  const [tab, setTab] = useState<'submissions' | 'missions' | 'leaderboard'>('submissions')
+  const [showAllSubmissions, setShowAllSubmissions] = useState(false)
+  const [participantPage, setParticipantPage] = useState(0)
+  const participantTouchStartRef = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    const root = document.documentElement
+    const previousScrollBehavior = root.style.scrollBehavior
+    root.style.scrollBehavior = 'auto'
+    window.scrollTo(0, 0)
+    const frame = requestAnimationFrame(() => {
+      root.style.scrollBehavior = previousScrollBehavior
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [campaignId])
+  if (!campaign) return <EmptyState icon={Flag} title="Campaign not found" description="Return to Campaigns and choose an active Madrid Philippines campaign." />
+
+  const missions = madridPromotions.filter((promotion) => promotion.campaignId === campaign.id)
+  const missionCards = missions.length ? missions : madridPromotions.slice(0, 3)
+  const submissions = campaignCreators.slice(0, 5).map((creator, index) => ({
+    ...creator,
+    recency: ['2 minutes ago', '8 minutes ago', '21 minutes ago', '43 minutes ago', '1 hour ago'][index],
+    submittedAt: ['9:42 AM', '9:36 AM', '9:23 AM', '9:01 AM', '8:44 AM'][index],
+    community: ['Madrid Performers', 'Field Riders', 'Assessmate Mentors', 'Madrid Performers', 'Field Riders'][index],
+    postCaption: [
+      'Ready for your next career move? Meet recruiters, bring your résumé, and apply on-site at the Solutions Job Fair. #MadridPHCareers #SolutionsJobFair',
+      'Job fair checklist: updated résumé, valid ID, confident introduction, and questions for recruiters. Save this before application day! #ApplicationDay #MadridPHCareers',
+      'A new opportunity can start with one conversation. Visit the Solutions Job Fair and take the next step toward your career goals. #YourNextCareerMove #SolutionsJobFair',
+      'Applications are open! Dress confidently, prepare your experience highlights, and meet hiring teams ready to talk. #JobFairReady #ApplyNow',
+      'Three quick tips for job fair success: research employers, practice your pitch, and follow up after every interview. #MadridPHCareers #CareerTips',
+    ][index],
+    missionName: [
+      'Application Day',
+      'Job Fair Essentials',
+      'Career Stories',
+      'Application Day',
+      'Job Fair Essentials',
+    ][index],
+  }))
+  const communityCount = new Set(submissions.map((submission) => submission.community)).size
+  const participatingCommunities = [
+    { name: 'Madrid Performers', logo: '/assets/campaign-internship.png', members: 150, submissions: 74 },
+    { name: 'Field Riders', logo: '/assets/campaign-tiko.jpeg', members: 100, submissions: 62 },
+    { name: 'Assessmate Mentors', logo: '/assets/campaign-assessmate.png', members: 50, submissions: 50 },
+    { name: 'Makati Career Creators', logo: '/assets/campaign-makati-hiring.png', members: 86, submissions: 41 },
+    { name: 'PITX Opportunity Network', logo: '/assets/campaign-pitx-job-fair.png', members: 72, submissions: 35 },
+  ]
+  const remainingBudget = Math.max(0, campaign.budget - campaign.spent)
+  const remainingBudgetPercentage = campaign.budget ? Math.round(remainingBudget / campaign.budget * 100) : 0
+  const participantPages = Array.from({ length: Math.ceil(participatingCommunities.length / 3) }, (_, index) => participatingCommunities.slice(index * 3, index * 3 + 3))
+
+  return <div className="campaign-detail-page">
+    <section className="campaign-detail-hero">
+      <div className="campaign-detail-cover"><img src={campaign.src} alt="" /><Link className="campaign-detail-back" to="/brand/opportunities" aria-label="Back to Campaigns"><ArrowLeft size={22} /></Link></div>
+      <div className="campaign-detail-information">
+        <h1>{campaign.name}</h1>
+        <p className="campaign-detail-brief">{campaign.goal}</p>
+        <strong className="campaign-detail-rating">
+          <span><UsersRound aria-hidden="true" />{communityCount} communities</span>
+          <span><UserRound aria-hidden="true" />{campaignCreators.length} creators</span>
+          <span><Film aria-hidden="true" />{campaign.published} submissions</span>
+        </strong>
+      </div>
+      <div className="campaign-budget-remaining">
+        <header>
+          <div><strong>{formatCurrency(remainingBudget)}</strong><span>Rewards remaining</span></div>
+          <div className="campaign-budget-total"><span>Total prize pool</span><strong>{formatCurrency(campaign.budget)}</strong></div>
+        </header>
+        <div className="campaign-budget-track" role="progressbar" aria-label="Rewards remaining" aria-valuemin={0} aria-valuemax={100} aria-valuenow={remainingBudgetPercentage}>
+          <span style={{ width: `${remainingBudgetPercentage}%` }} />
+          <strong>{remainingBudgetPercentage}%</strong>
+        </div>
+      </div>
+    </section>
+    <div className="campaign-detail-content">
+      <section className="campaign-happening" aria-labelledby="campaign-happening-title">
+        <h2 id="campaign-happening-title">What&apos;s Happening</h2>
+        <nav className="campaign-detail-tabs" aria-label="Campaign sections">
+        {(['submissions', 'missions', 'leaderboard'] as const).map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}
+        </nav>
+        {tab === 'submissions' ? <section className="campaign-submission-list" aria-label="Campaign submissions">
+        {(showAllSubmissions ? submissions : submissions.slice(0, 3)).map((submission) => <details className="campaign-submission-card" key={submission.name}>
+          <summary>
+            <img className="submission-avatar" src={submission.avatar} alt="" />
+            <div><p><strong>{submission.name}</strong><span> submitted a video</span></p><small>{submission.recency} at {submission.submittedAt}</small></div>
+            <span className="submission-caret" aria-hidden="true"><ChevronDown size={20} /></span>
+          </summary>
+          <div className="campaign-submission-details">
+            <p><strong><em>{submission.postCaption}</em></strong> — <span>submitted to the {submission.missionName} mission.</span></p>
+            <footer>
+              <a className="button submission-action-tiktok" href="https://www.tiktok.com/" target="_blank" rel="noreferrer"><TikTokMark />See in TikTok</a>
+              <button className="button submission-action-mission" type="button" onClick={() => setTab('missions')}>View mission</button>
+            </footer>
+          </div>
+        </details>)}
+        <button
+          className="campaign-submission-toggle"
+          type="button"
+          aria-expanded={showAllSubmissions}
+          onClick={() => setShowAllSubmissions((visible) => !visible)}
+        >
+          {showAllSubmissions ? 'See less' : 'See all'}
+        </button>
+        </section> : null}
+        {tab === 'missions' ? <section className="campaign-mission-grid" aria-label="Campaign missions">
+        {missionCards.map((mission, index) => <article key={mission.id}>
+          <img src={tiktokContentPreviews[(index + 2) % tiktokContentPreviews.length]} alt="" />
+          <div><span className="eyebrow">MISSION {String(index + 1).padStart(2, '0')}</span><h2>{mission.name}</h2><div className="mission-participants" aria-label="20 participating creators">{campaignCreators.map((creator) => <img key={creator.name} src={creator.avatar} alt="" />)}<span>+15</span></div><dl><div><dt>Views</dt><dd>{formatNumber(mission.views)}</dd></div><div><dt>Engagement</dt><dd>{formatNumber(mission.engagement)}</dd></div></dl></div>
+        </article>)}
+        </section> : null}
+        {tab === 'leaderboard' ? <section className="campaign-leaderboard" aria-label="Campaign leaderboard">
+        <div className="campaign-leaderboard-podium" aria-label="Top 3 creators">
+          {campaignCreators.slice(0, 3).map((creator, index) => <article className={`leaderboard-rank-${index + 1}`} key={creator.name}>
+            <b>{index + 1}</b><img src={creator.avatar} alt="" /><div><strong>{creator.name}</strong><small>{creator.handle}</small></div><span><strong>{formatNumber(creator.engagement)}</strong><small>engagement</small></span>
+          </article>)}
+        </div>
+        <div className="campaign-leaderboard-rest" aria-label="Rest of the Top 10">
+          <header><span className="eyebrow">REST OF THE TOP 10</span></header>
+          {campaignCreators.slice(3).map((creator, index) => <article key={creator.name}>
+            <b>{index + 4}</b><img src={creator.avatar} alt="" /><div><strong>{creator.name}</strong><small>{creator.handle}</small></div><span><strong>{formatNumber(creator.engagement)}</strong><small>engagement</small></span>
+          </article>)}
+        </div>
+        </section> : null}
+      </section>
+      <section className="campaign-participants" aria-labelledby="campaign-participants-title">
+        <header>
+          <h2 id="campaign-participants-title">Who&apos;s Participating</h2>
+          <div>
+            <button type="button" aria-label="Previous communities" disabled={participantPage === 0} onClick={() => setParticipantPage((page) => Math.max(0, page - 1))}><ChevronLeft /></button>
+            <button type="button" aria-label="Next communities" disabled={participantPage === participantPages.length - 1} onClick={() => setParticipantPage((page) => Math.min(participantPages.length - 1, page + 1))}><ChevronRight /></button>
+          </div>
+        </header>
+        <div
+          className="campaign-participant-track"
+          aria-live="polite"
+          onTouchStart={(event) => { participantTouchStartRef.current = event.touches[0]?.clientX ?? null }}
+          onTouchEnd={(event) => {
+            const start = participantTouchStartRef.current
+            const end = event.changedTouches[0]?.clientX
+            participantTouchStartRef.current = null
+            if (start == null || end == null || Math.abs(start - end) < 45) return
+            setParticipantPage((page) => start > end ? Math.min(participantPages.length - 1, page + 1) : Math.max(0, page - 1))
+          }}
+        >
+          <div className="campaign-participant-slider" style={{ transform: `translateX(-${participantPage * 100}%)` }}>
+            {participantPages.map((page, pageIndex) => <div className="campaign-participant-page" aria-hidden={pageIndex !== participantPage} key={pageIndex}>
+              {page.map((community) => <Link to="/brand/communities" tabIndex={pageIndex === participantPage ? 0 : -1} key={community.name}>
+                <img src={community.logo} alt="" />
+                <div className="campaign-participant-name"><strong title={community.name}>{community.name}</strong><BadgeCheck aria-label="Verified community" /></div>
+                <small><span>{community.members} members</span><span>{community.submissions} submissions</span></small>
+              </Link>)}
+            </div>)}
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 }
 
@@ -674,4 +892,30 @@ export function BrandProfilePage() {
   const [saved, setSaved] = useState(false)
   function submit(event: React.FormEvent) { event.preventDefault(); dispatch({ type: 'UPDATE_BRAND', brand }); setSaved(true) }
   return <div className="page-stack settings-page"><PageHeader eyebrow="BRAND PROFILE" title="Your identity across OkPo" description="Community Managers see this information when evaluating campaigns." /><form className="panel profile-form" onSubmit={submit}><div className="profile-identity"><Avatar initials={brand.initials} size="lg" tone="yellow" /><div><strong>{brand.name}</strong><span>Verified Brand</span></div></div><div className="form-grid form-grid-two"><label className="field"><span>Brand name</span><input value={brand.name} onChange={(event) => setBrand({ ...brand, name: event.target.value })} /></label><label className="field"><span>Website</span><input value={brand.website} onChange={(event) => setBrand({ ...brand, website: event.target.value })} /></label><label className="field"><span>Industry</span><input value={brand.industry} onChange={(event) => setBrand({ ...brand, industry: event.target.value })} /></label><label className="field"><span>Location</span><input value={brand.location} onChange={(event) => setBrand({ ...brand, location: event.target.value })} /></label><label className="field full"><span>Brand description</span><textarea rows={4} value={brand.description} onChange={(event) => setBrand({ ...brand, description: event.target.value })} /></label><label className="field"><span>Primary contact</span><input value={brand.contactName} onChange={(event) => setBrand({ ...brand, contactName: event.target.value })} /></label><label className="field"><span>Contact email</span><input type="email" value={brand.contactEmail} onChange={(event) => setBrand({ ...brand, contactEmail: event.target.value })} /></label></div><footer className="form-footer">{saved ? <span className="saved-message"><CheckCircle2 size={16} />Saved to this prototype</span> : <span />}<button className="button button-primary">Save brand profile</button></footer></form></div>
+}
+
+export function BrandNotifications() {
+  const { state } = useApp()
+  const notices = state.notifications.filter((item) => item.role === 'brand')
+  return <div className="page-stack settings-page">
+    <PageHeader eyebrow="NOTIFICATIONS" title="Updates for your workspace" description="Track campaign activity and important account updates." />
+    <section className="panel notification-page-list">
+      {notices.length ? notices.map((notice) => <article key={notice.id}>
+        <span className={notice.read ? '' : 'unread'} />
+        <div><strong>{notice.title}</strong><p>{notice.detail}</p><small>{notice.time}</small></div>
+      </article>) : <EmptyState icon={CheckCircle2} title="You're all caught up" description="New brand notifications will appear here." />}
+    </section>
+  </div>
+}
+
+export function BrandSettings() {
+  const [campaignEmails, setCampaignEmails] = useState(true)
+  const [weeklySummary, setWeeklySummary] = useState(true)
+  return <div className="page-stack settings-page">
+    <PageHeader eyebrow="SETTINGS" title="Workspace preferences" description="Control how Madrid Philippines receives updates from OkPo." />
+    <section className="panel settings-preference-list">
+      <label><span><strong>Campaign email updates</strong><small>Receive changes to campaign allocation and publishing.</small></span><input type="checkbox" checked={campaignEmails} onChange={(event) => setCampaignEmails(event.target.checked)} /></label>
+      <label><span><strong>Weekly performance summary</strong><small>Get a weekly snapshot of campaign analytics.</small></span><input type="checkbox" checked={weeklySummary} onChange={(event) => setWeeklySummary(event.target.checked)} /></label>
+    </section>
+  </div>
 }

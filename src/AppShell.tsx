@@ -19,8 +19,11 @@ const navigation = {
   brand: [
     { to: '/brand', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/brand/opportunities', label: 'Campaigns', icon: FolderKanban },
-    { to: '/brand/reports', label: 'Reports', icon: BarChart3 },
-    { to: '/brand/profile', label: 'Brand Profile', icon: Settings },
+    { to: '/brand/communities', label: 'Communities', icon: UsersRound },
+    { to: '/brand/reports', label: 'Analytics', icon: BarChart3 },
+    { to: '/brand/notifications', label: 'Notifications', icon: Bell },
+    { to: '/brand/profile', label: 'Brand Profile', icon: UserCircle },
+    { to: '/brand/settings', label: 'Settings', icon: Settings },
   ],
   leader: [
     { to: '/leader', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -51,7 +54,6 @@ export function AppShell() {
   const activeRole: ProfileRole = routeSegment === 'brand' || routeSegment === 'leader' || routeSegment === 'member' ? routeSegment : state.activeRole
   const meta = roleMeta[activeRole]
   const notices = state.notifications.filter((item) => item.role === activeRole)
-  const isBrandDashboard = location.pathname === '/brand'
 
   useEffect(() => {
     if (state.activeRole !== activeRole) dispatch({ type: 'SET_ROLE', role: activeRole })
@@ -90,9 +92,7 @@ export function AppShell() {
     <div className="main-shell">
       <header className="topbar">
         <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-        {activeRole === 'brand'
-          ? <div className="topbar-context brand-topbar-context"><img src="/assets/madrid-philippines-logo.png" alt="Madrid Philippines" /><h1>{isBrandDashboard ? `Good morning, ${meta.name}` : meta.label}</h1></div>
-          : <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div>}
+        {activeRole !== 'brand' ? <div className="topbar-context"><Logo compact /><strong>{meta.label}</strong></div> : null}
         <div className="topbar-actions">
           <button className="icon-button notification-button" aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}><Bell size={18} />{notices.some((item) => !item.read) ? <i /> : null}</button>
           {notificationsOpen ? <div className="notification-popover"><header><strong>Notifications</strong><button onClick={() => setNotificationsOpen(false)}>Close</button></header>{notices.length ? notices.map((item) => <article key={item.id}><span className={item.read ? '' : 'unread'} /><div><strong>{item.title}</strong><p>{item.detail}</p><small>{item.time}</small></div></article>) : <p className="popover-empty">No notifications for this profile.</p>}</div> : null}
