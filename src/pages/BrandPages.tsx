@@ -3,7 +3,6 @@ import {
   Eye, FileCheck2, Film, Flag, Grid2X2, Hash, Layers3, List, MousePointerClick, Package, Percent,
   Minus, Pencil, Plus, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
 } from 'lucide-react'
-import { gsap } from 'gsap'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
@@ -398,7 +397,6 @@ function WizardSection({ number, title, description, children }: { number: strin
 
 export function BrandOpportunities() {
   const { state } = useApp()
-  const navigate = useNavigate()
   const [layout, setLayout] = useState<'large' | 'compact'>('large')
   const createdCampaigns: Array<MadridCampaign & { to: string }> = state.opportunities
     .filter((opportunity) => !legacyDemoOpportunityIds.has(opportunity.id))
@@ -421,72 +419,6 @@ export function BrandOpportunities() {
     })
   const campaigns: Array<MadridCampaign & { to?: string }> = [...createdCampaigns, ...madridCampaigns]
 
-  const openCampaign = (event: React.MouseEvent<HTMLAnchorElement>, campaign: MadridCampaign & { to?: string }) => {
-    const destination = campaign.to ?? `/brand/campaigns/${campaign.id}`
-    const isPlainPointerClick = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
-    const prefersReducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (typeof window.matchMedia !== 'function' || !isPlainPointerClick || event.detail === 0 || prefersReducedMotion || !destination.startsWith('/brand/campaigns/')) return
-
-    const image = event.currentTarget.querySelector('img')
-    const pageContainer = document.querySelector<HTMLElement>('.page-container')
-    const topbar = document.querySelector<HTMLElement>('.topbar')
-    if (!image || !pageContainer || !topbar) return
-
-    event.preventDefault()
-    const source = image.getBoundingClientRect()
-    const page = pageContainer.getBoundingClientRect()
-    const pageStyles = window.getComputedStyle(pageContainer)
-    const isMobile = window.matchMedia('(max-width: 680px)').matches
-    const paddingLeft = isMobile ? 0 : Number.parseFloat(pageStyles.paddingLeft)
-    const paddingRight = isMobile ? 0 : Number.parseFloat(pageStyles.paddingRight)
-    const paddingTop = isMobile ? 0 : Number.parseFloat(pageStyles.paddingTop)
-    const targetLeft = page.left + paddingLeft
-    const targetTop = topbar.getBoundingClientRect().bottom + paddingTop
-    const targetWidth = page.width - paddingLeft - paddingRight
-    const targetHeight = isMobile ? targetWidth : targetWidth * 8.5 / 16
-    const overlay = image.cloneNode() as HTMLImageElement
-
-    overlay.className = 'campaign-cover-transition-overlay'
-    overlay.alt = ''
-    overlay.setAttribute('aria-hidden', 'true')
-    document.body.appendChild(overlay)
-    gsap.set(overlay, {
-      left: targetLeft,
-      top: targetTop,
-      width: targetWidth,
-      height: targetHeight,
-      x: source.left - targetLeft,
-      y: source.top - targetTop,
-      scaleX: source.width / targetWidth,
-      scaleY: source.height / targetHeight,
-      borderRadius: window.getComputedStyle(image).borderRadius,
-      transformOrigin: 'top left',
-    })
-
-    gsap.to(overlay, {
-      x: 0,
-      y: 0,
-      scaleX: 1,
-      scaleY: 1,
-      borderRadius: 0,
-      duration: 0.38,
-      ease: 'power3.inOut',
-      overwrite: true,
-      onComplete: () => {
-        const root = document.documentElement
-        const previousScrollBehavior = root.style.scrollBehavior
-        root.style.scrollBehavior = 'auto'
-        window.scrollTo(0, 0)
-        navigate(destination)
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          overlay.remove()
-          root.style.scrollBehavior = previousScrollBehavior
-        }))
-      },
-      onInterrupt: () => overlay.remove(),
-    })
-  }
-
   return <div className="page-stack">
     <PageHeader
       eyebrow="MADRID PHILIPPINES"
@@ -503,7 +435,7 @@ export function BrandOpportunities() {
         className="campaign-listing-card"
         to={campaign.to ?? `/brand/campaigns/${campaign.id}`}
         key={campaign.id}
-        onClick={(event) => openCampaign(event, campaign)}
+        viewTransition
       >
         <img src={campaign.src} alt="" />
         <div>
