@@ -18,7 +18,7 @@ export const madridCampaigns: readonly MadridCampaign[] = [
   {
     id: 'okpo-five-day-public-challenge',
     name: 'OkPo 5-day Public Challenge',
-    src: '/assets/campaign-okpo-five-day-public-challenge.jpeg',
+    src: '/assets/campaign-okpo-five-day-public-challenge.png',
     budget: 10000,
     spent: 0,
     target: 0,
