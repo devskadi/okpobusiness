@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, BadgeCheck, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
   Eye, FileCheck2, Film, Flag, Grid2X2, Hash, Layers3, List, MousePointerClick, Package, Percent,
-  Minus, Pencil, Plus, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
+  Minus, Pencil, Plus, RefreshCw, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -28,6 +28,12 @@ function ordinal(value: number) {
   if (value % 10 === 2) return `${value}nd`
   if (value % 10 === 3) return `${value}rd`
   return `${value}th`
+}
+
+function campaignDateFromReference(weeksFromNow: number) {
+  const date = new Date('2026-07-30T00:00:00Z')
+  date.setUTCDate(date.getUTCDate() + weeksFromNow * 7)
+  return date.toISOString().slice(0, 10)
 }
 
 function TikTokMark({ size = 15 }: { size?: number }) {
@@ -438,9 +444,10 @@ export function BrandOpportunities() {
         viewTransition
       >
         <img src={campaign.src} alt="" />
+        <span className={`campaign-listing-cycle-badge${campaign.status === 'Upcoming' ? ' upcoming' : ''}`}>{campaign.status === 'Upcoming' ? 'Upcoming' : <><RefreshCw size={13} aria-hidden="true" />{ordinal(campaign.currentWeek)} cycle</>}</span>
         <div>
-          <header><div><h2 aria-label={campaign.name}>{campaign.name} <span>· {ordinal(campaign.currentWeek)} cycle</span></h2><span>Madrid Philippines</span></div><strong aria-label={`Target ${campaign.target}`}><Target size={16} aria-hidden="true" /><span className="campaign-listing-target-value">{campaign.target}</span><span className="campaign-listing-target-label">to post</span></strong></header>
-          <div className="campaign-listing-pool"><strong><span aria-hidden="true">🤑</span>{formatCurrency(campaign.budget)} <span>for</span> <span className="campaign-listing-duration" aria-label={`${campaign.weeks} weeks`}>{campaign.weeks} weeks</span></strong></div>
+          <header><div><h2 aria-label={campaign.name}>{campaign.name} {campaign.status !== 'Upcoming' ? <span>· {ordinal(campaign.currentWeek)} cycle</span> : null}</h2><span>{campaign.postedBy ? `Posted by ${campaign.postedBy}` : 'Madrid Philippines'}</span></div><strong aria-label={campaign.target ? `Target ${campaign.target}` : 'Content target unlimited'}><Target size={16} aria-hidden="true" /><span className="campaign-listing-target-value">{campaign.target || 'Unlimited'}</span><span className="campaign-listing-target-label">to post</span></strong></header>
+          <div className="campaign-listing-pool"><strong><span aria-hidden="true">🤑</span>{formatCurrency(campaign.budget)} <span>for</span> <span className="campaign-listing-duration" aria-label={campaign.durationLabel ?? `${campaign.weeks} weeks`}>{campaign.durationLabel ?? `${campaign.weeks} weeks`}</span></strong></div>
         </div>
       </Link>)}
     </section>
@@ -479,13 +486,15 @@ export function BrandCampaignDetail() {
   }, [campaignId])
   if (!campaign) return <EmptyState icon={Flag} title="Campaign not found" description="Return to Campaigns and choose an active Madrid Philippines campaign." />
 
+  const isUpcoming = campaign.status === 'Upcoming'
   const missions = madridPromotions.filter((promotion) => promotion.campaignId === campaign.id)
   const missionCards = missions.length ? missions : madridPromotions.slice(0, 3)
   const submissions = campaignCreators.slice(0, 5).map((creator, index) => ({
     ...creator,
+    name: ['angelmechure', 'Loida Erguiza', 'Ian Madrid', 'Roseann Sta. Agata', 'seanrnp'][index],
     recency: ['2 minutes ago', '8 minutes ago', '21 minutes ago', '43 minutes ago', '1 hour ago'][index],
     submittedAt: ['9:42 AM', '9:36 AM', '9:23 AM', '9:01 AM', '8:44 AM'][index],
-    community: ['Madrid Performers', 'Field Riders', 'Assessmate Mentors', 'Madrid Performers', 'Field Riders'][index],
+    community: ['Madrid PH', 'Madrid HR', 'TICP', 'Madrid PH', 'Madrid HR'][index],
     postCaption: [
       'Ready for your next career move? Meet recruiters, bring your résumé, and apply on-site at the Solutions Job Fair. #MadridPHCareers #SolutionsJobFair',
       'Job fair checklist: updated résumé, valid ID, confident introduction, and questions for recruiters. Save this before application day! #ApplicationDay #MadridPHCareers',
@@ -501,27 +510,44 @@ export function BrandCampaignDetail() {
       'Job Fair Essentials',
     ][index],
   }))
-  const communityCount = new Set(submissions.map((submission) => submission.community)).size
-  const participatingCommunities = [
-    { name: 'Madrid Performers', logo: '/assets/campaign-internship.png', members: 150, submissions: 74 },
-    { name: 'Field Riders', logo: '/assets/campaign-tiko.jpeg', members: 100, submissions: 62 },
-    { name: 'Assessmate Mentors', logo: '/assets/campaign-assessmate.png', members: 50, submissions: 50 },
-    { name: 'Makati Career Creators', logo: '/assets/campaign-makati-hiring.png', members: 86, submissions: 41 },
-    { name: 'PITX Opportunity Network', logo: '/assets/campaign-pitx-job-fair.png', members: 72, submissions: 35 },
+  const communityPlaceholders = [
+    { name: 'Madrid PH', logo: '/assets/community-madrid-ph.png', members: 1269, submissions: 14432, views: 32871932 },
+    { name: 'Madrid HR', logo: '/assets/community-madrid-hr.png', members: 25, submissions: 5515, views: 16975227 },
+    { name: 'Madrid Field', logo: '/assets/community-madrid-field.png', members: 26, submissions: 11, views: 3904 },
+    { name: 'TICP', logo: '/assets/community-ticp.jpeg', members: 85, submissions: 331, views: 137039 },
+    { name: 'CEPAT Creators', logo: '/assets/community-cepat-creators.png', members: 3, submissions: 1, views: 732 },
+    { name: "Cloud's VIPs", logo: '/assets/community-clouds-vips.png', members: 16, submissions: 2690, views: 1118416 },
+    { name: 'SPM Davao', logo: '/assets/community-spm-davao.png', members: 34, submissions: 434, views: 1437779 },
+    { name: 'PETRON Fiesta Gas Canister', logo: '/assets/community-petron-fiesta-gas.png', members: 13, submissions: 146, views: 63659 },
+    { name: 'Dropify', logo: '/assets/community-dropify.png', members: 37, submissions: 53, views: 47309 },
+    { name: 'Salamat AI', logo: '/assets/community-salamat-ai.png', members: 41, submissions: 28, views: 29207 },
   ]
+  const participatingCommunities = isUpcoming
+    ? []
+    : campaign.id === 'madrid-solutions-job-fair'
+    ? communityPlaceholders.filter((community) => ['Madrid PH', 'Madrid HR', 'TICP'].includes(community.name))
+    : communityPlaceholders
+  const communityCount = participatingCommunities.length
   const remainingBudget = Math.max(0, campaign.budget - campaign.spent)
   const remainingBudgetPercentage = campaign.budget ? Math.round(remainingBudget / campaign.budget * 100) : 0
+  const remainingWeeks = Math.max(0, campaign.weeks - campaign.currentWeek)
+  const lastFundedDate = campaignDateFromReference(0)
+  const expectedFinishDate = campaignDateFromReference(remainingWeeks)
   const participantPages = Array.from({ length: Math.ceil(participatingCommunities.length / 3) }, (_, index) => participatingCommunities.slice(index * 3, index * 3 + 3))
 
   return <div className="campaign-detail-page">
     <section className="campaign-detail-hero">
-      <div className="campaign-detail-cover"><img src={campaign.src} alt="" /><Link className="campaign-detail-back" to="/brand/opportunities" aria-label="Back to Campaigns"><ArrowLeft size={22} /></Link></div>
+      <div className="campaign-detail-cover">
+        <img src={campaign.src} alt="" />
+        <Link className="campaign-detail-back" to="/brand/opportunities" aria-label="Back to Campaigns"><ArrowLeft size={22} /></Link>
+        {isUpcoming ? <span className="campaign-detail-status-chip">Upcoming</span> : null}
+      </div>
       <div className="campaign-detail-information">
         <h1>{campaign.name}</h1>
         <p className="campaign-detail-brief">{campaign.goal}</p>
         <strong className="campaign-detail-rating">
           <span><UsersRound aria-hidden="true" />{communityCount} communities</span>
-          <span><UserRound aria-hidden="true" />{campaignCreators.length} creators</span>
+          <span><UserRound aria-hidden="true" />{isUpcoming ? 0 : campaignCreators.length} creators</span>
           <span><Film aria-hidden="true" />{campaign.published} submissions</span>
         </strong>
       </div>
@@ -539,10 +565,11 @@ export function BrandCampaignDetail() {
     <div className="campaign-detail-content">
       <section className="campaign-happening" aria-labelledby="campaign-happening-title">
         <h2 id="campaign-happening-title">What&apos;s Happening</h2>
-        <nav className="campaign-detail-tabs" aria-label="Campaign sections">
-        {(['submissions', 'missions', 'leaderboard'] as const).map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}
+        <nav className={`campaign-detail-tabs${isUpcoming ? ' upcoming' : ''}`} aria-label="Campaign sections">
+        {(['submissions', 'missions', 'leaderboard'] as const).filter((item) => !(isUpcoming && item === 'missions')).map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}
         </nav>
-        {tab === 'submissions' ? <section className="campaign-submission-list" aria-label="Campaign submissions">
+        {tab === 'submissions' && isUpcoming ? <section className="campaign-upcoming-empty" aria-label="Campaign submissions">This is an upcoming campaign, check tomorrow for updates!</section> : null}
+        {tab === 'submissions' && !isUpcoming ? <section className="campaign-submission-list" aria-label="Campaign submissions">
         {(showAllSubmissions ? submissions : submissions.slice(0, 3)).map((submission) => <details className="campaign-submission-card" key={submission.name}>
           <summary>
             <img className="submission-avatar" src={submission.avatar} alt="" />
@@ -572,7 +599,8 @@ export function BrandCampaignDetail() {
           <div><span className="eyebrow">MISSION {String(index + 1).padStart(2, '0')}</span><h2>{mission.name}</h2><div className="mission-participants" aria-label="20 participating creators">{campaignCreators.map((creator) => <img key={creator.name} src={creator.avatar} alt="" />)}<span>+15</span></div><dl><div><dt>Views</dt><dd>{formatNumber(mission.views)}</dd></div><div><dt>Engagement</dt><dd>{formatNumber(mission.engagement)}</dd></div></dl></div>
         </article>)}
         </section> : null}
-        {tab === 'leaderboard' ? <section className="campaign-leaderboard" aria-label="Campaign leaderboard">
+        {tab === 'leaderboard' && isUpcoming ? <section className="campaign-upcoming-empty" aria-label="Campaign leaderboard">This is an upcoming campaign, check tomorrow for updates!</section> : null}
+        {tab === 'leaderboard' && !isUpcoming ? <section className="campaign-leaderboard" aria-label="Campaign leaderboard">
         <div className="campaign-leaderboard-podium" aria-label="Top 3 creators">
           {campaignCreators.slice(0, 3).map((creator, index) => <article className={`leaderboard-rank-${index + 1}`} key={creator.name}>
             <b>{index + 1}</b><img src={creator.avatar} alt="" /><div><strong>{creator.name}</strong><small>{creator.handle}</small></div><span><strong>{formatNumber(creator.engagement)}</strong><small>engagement</small></span>
@@ -586,14 +614,16 @@ export function BrandCampaignDetail() {
         </div>
         </section> : null}
       </section>
-      <section className="campaign-participants" aria-labelledby="campaign-participants-title">
+      <section className={`campaign-participants${isUpcoming ? ' upcoming' : ''}`} aria-labelledby="campaign-participants-title">
         <header>
           <h2 id="campaign-participants-title">Who&apos;s Participating</h2>
-          <div>
+          {!isUpcoming ? <div>
             <button type="button" aria-label="Previous communities" disabled={participantPage === 0} onClick={() => setParticipantPage((page) => Math.max(0, page - 1))}><ChevronLeft /></button>
             <button type="button" aria-label="Next communities" disabled={participantPage === participantPages.length - 1} onClick={() => setParticipantPage((page) => Math.min(participantPages.length - 1, page + 1))}><ChevronRight /></button>
-          </div>
+          </div> : null}
         </header>
+        {isUpcoming ? <div className="campaign-upcoming-empty">This is an upcoming campaign, no communities yet.</div> : null}
+        {!isUpcoming ? <>
         <div
           className="campaign-participant-track"
           aria-live="polite"
@@ -611,10 +641,26 @@ export function BrandCampaignDetail() {
               {page.map((community) => <Link to="/brand/communities" tabIndex={pageIndex === participantPage ? 0 : -1} key={community.name}>
                 <img src={community.logo} alt="" />
                 <div className="campaign-participant-name"><strong title={community.name}>{community.name}</strong><BadgeCheck aria-label="Verified community" /></div>
-                <small><span>{community.members} members</span><span>{community.submissions} submissions</span></small>
+                <small>
+                  <span>{formatNumber(community.members)} members</span>
+                  <span>{formatNumber(community.submissions)} {community.submissions === 1 ? 'submission' : 'submissions'}</span>
+                  <span>{formatNumber(community.views)} views</span>
+                </small>
               </Link>)}
             </div>)}
           </div>
+        </div>
+        </> : null}
+      </section>
+      <section className="campaign-duration" aria-labelledby="campaign-duration-title">
+        <h2 id="campaign-duration-title">Campaign Duration</h2>
+        <div className="campaign-duration-summary">
+          {isUpcoming ? <p>This campaign will open tomorrow July 31, 2026. It will run for 5 days and is expected to finish on August 4, 2026, unless OkPo decides to extend its duration and add more funds.</p> : <p>
+            This campaign was last funded on {formatDate(lastFundedDate)}.{' '}
+            {remainingWeeks > 0
+              ? `It will run for another ${remainingWeeks} ${remainingWeeks === 1 ? 'week' : 'weeks'} and is expected to finish on ${formatDate(expectedFinishDate)}.`
+              : `It is in its final week and is expected to finish on ${formatDate(expectedFinishDate)}.`}
+          </p>}
         </div>
       </section>
     </div>

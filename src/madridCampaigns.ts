@@ -9,9 +9,27 @@ export type MadridCampaign = {
   weeks: number
   currentWeek: number
   goal: string
+  status?: 'Upcoming'
+  postedBy?: string
+  durationLabel?: string
 }
 
 export const madridCampaigns: readonly MadridCampaign[] = [
+  {
+    id: 'okpo-five-day-public-challenge',
+    name: 'OkPo 5-day Public Challenge',
+    src: '/assets/campaign-blank.svg',
+    budget: 10000,
+    spent: 0,
+    target: 0,
+    published: 0,
+    weeks: 1,
+    currentWeek: 0,
+    goal: 'Join daily content challenges, complete fun missions, and earn rewards from the ₱10,000 prize pool. Open to everyone for 5 days only. Let’s go! 🚀',
+    status: 'Upcoming',
+    postedBy: 'OkPo',
+    durationLabel: '5 days',
+  },
   {
     id: 'madrid-solutions-job-fair',
     name: 'Solutions Job Fair',
