@@ -1,6 +1,6 @@
 import {
   ArrowLeft, ArrowRight, BadgeCheck, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Eye, FileCheck2, Film, Flag, Grid2X2, Hash, Layers3, List, MousePointerClick, Package, Percent,
+  Eye, FileCheck2, Film, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
   Minus, Pencil, Plus, RefreshCw, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -403,7 +403,6 @@ function WizardSection({ number, title, description, children }: { number: strin
 
 export function BrandOpportunities() {
   const { state } = useApp()
-  const [layout, setLayout] = useState<'large' | 'compact'>('large')
   const createdCampaigns: Array<MadridCampaign & { to: string }> = state.opportunities
     .filter((opportunity) => !legacyDemoOpportunityIds.has(opportunity.id))
     .map((opportunity, index) => {
@@ -429,14 +428,10 @@ export function BrandOpportunities() {
     <PageHeader
       eyebrow="MADRID PHILIPPINES"
       title="Campaign portfolio"
-      titleAccessory={<div className="campaign-layout-toggle" role="group" aria-label="Campaign layout">
-        <button type="button" aria-label="Large campaign cards" aria-pressed={layout === 'large'} onClick={() => setLayout('large')}><Grid2X2 size={17} /></button>
-        <button type="button" aria-label="Compact campaign list" aria-pressed={layout === 'compact'} onClick={() => setLayout('compact')}><List size={18} /></button>
-      </div>}
       description="Track allocation, publishing, and timing in one place."
       actions={<Link className="button button-primary" to="/brand/opportunities/new"><Plus size={16} />New campaign</Link>}
     />
-    <section className={`campaign-portfolio campaign-portfolio-${layout}`} aria-label="Madrid Philippines campaigns">
+    <section className="campaign-portfolio campaign-portfolio-large" aria-label="Madrid Philippines campaigns">
       {campaigns.map((campaign) => <Link
         className="campaign-listing-card"
         to={campaign.to ?? `/brand/campaigns/${campaign.id}`}
@@ -487,6 +482,7 @@ export function BrandCampaignDetail() {
   if (!campaign) return <EmptyState icon={Flag} title="Campaign not found" description="Return to Campaigns and choose an active Madrid Philippines campaign." />
 
   const isUpcoming = campaign.status === 'Upcoming'
+  const campaignBrandName = campaign.postedBy ?? 'Madrid Philippines'
   const missions = madridPromotions.filter((promotion) => promotion.campaignId === campaign.id)
   const missionCards = missions.length ? missions : madridPromotions.slice(0, 3)
   const submissions = campaignCreators.slice(0, 5).map((creator, index) => ({
@@ -522,15 +518,22 @@ export function BrandCampaignDetail() {
     { name: 'Dropify', logo: '/assets/community-dropify.png', members: 37, submissions: 53, views: 47309 },
     { name: 'Salamat AI', logo: '/assets/community-salamat-ai.png', members: 41, submissions: 28, views: 29207 },
   ]
+  const participantNamesByCampaign: Record<string, string[]> = {
+    'madrid-tech-recruitment': ['Madrid HR'],
+    'madrid-internship-cohort-3': ['TICP', 'Madrid PH', 'Madrid HR'],
+    'madrid-spm-dubai-hiring': ['Madrid HR', 'Madrid PH'],
+    'madrid-pitx-job-fair': ['Madrid HR'],
+  }
+  const participantNames = participantNamesByCampaign[campaign.id]
   const participatingCommunities = isUpcoming
     ? []
-    : campaign.id === 'madrid-solutions-job-fair'
-    ? communityPlaceholders.filter((community) => ['Madrid PH', 'Madrid HR', 'TICP'].includes(community.name))
-    : communityPlaceholders
+    : participantNames
+      ? participantNames.map((name) => communityPlaceholders.find((community) => community.name === name)!)
+      : communityPlaceholders
   const communityCount = participatingCommunities.length
   const remainingBudget = Math.max(0, campaign.budget - campaign.spent)
   const remainingBudgetPercentage = campaign.budget ? Math.round(remainingBudget / campaign.budget * 100) : 0
-  const remainingWeeks = Math.max(0, campaign.weeks - campaign.currentWeek)
+  const remainingWeeks = campaign.remainingWeeks ?? Math.max(0, campaign.weeks - campaign.currentWeek)
   const lastFundedDate = campaignDateFromReference(0)
   const expectedFinishDate = campaignDateFromReference(remainingWeeks)
   const participantPages = Array.from({ length: Math.ceil(participatingCommunities.length / 3) }, (_, index) => participatingCommunities.slice(index * 3, index * 3 + 3))
@@ -546,7 +549,7 @@ export function BrandCampaignDetail() {
         <h1>{campaign.name}</h1>
         <p className="campaign-detail-brief">{campaign.goal}</p>
         <strong className="campaign-detail-rating">
-          <span><UsersRound aria-hidden="true" />{communityCount} communities</span>
+          <span><UsersRound aria-hidden="true" />{communityCount} {communityCount === 1 ? 'community' : 'communities'}</span>
           <span><UserRound aria-hidden="true" />{isUpcoming ? 0 : campaignCreators.length} creators</span>
           <span><Film aria-hidden="true" />{campaign.published} submissions</span>
         </strong>
@@ -655,11 +658,11 @@ export function BrandCampaignDetail() {
       <section className="campaign-duration" aria-labelledby="campaign-duration-title">
         <h2 id="campaign-duration-title">Campaign Duration</h2>
         <div className="campaign-duration-summary">
-          {isUpcoming ? <p>This campaign will open tomorrow July 31, 2026. It will run for 5 days and is expected to finish on August 4, 2026, unless OkPo decides to extend its duration and add more funds.</p> : <p>
+          {isUpcoming ? <p>This campaign will open tomorrow July 31, 2026. It will run for 5 days and is expected to finish on August 4, 2026, unless {campaignBrandName} decides to extend its duration and add more funds.</p> : <p>
             This campaign was last funded on {formatDate(lastFundedDate)}.{' '}
             {remainingWeeks > 0
-              ? `It will run for another ${remainingWeeks} ${remainingWeeks === 1 ? 'week' : 'weeks'} and is expected to finish on ${formatDate(expectedFinishDate)}.`
-              : `It is in its final week and is expected to finish on ${formatDate(expectedFinishDate)}.`}
+              ? `It will run for another ${remainingWeeks} ${remainingWeeks === 1 ? 'week' : 'weeks'} and is expected to finish on ${formatDate(expectedFinishDate)}, unless ${campaignBrandName} decides to extend its duration and add more funds.`
+              : `It is in its final week and is expected to finish on ${formatDate(expectedFinishDate)}, unless ${campaignBrandName} decides to extend its duration and add more funds.`}
           </p>}
         </div>
       </section>

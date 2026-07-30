@@ -108,8 +108,8 @@ test('Brand campaigns use Madrid data and compact current metrics on mobile', as
   await page.goto('/brand/opportunities')
 
   const campaigns = page.locator('.campaign-portfolio-card')
-  await expect(campaigns).toHaveCount(6)
-  await expect(campaigns.first()).toContainText('Solutions Job Fair')
+  await expect(campaigns).toHaveCount(5)
+  await expect(campaigns.first()).toContainText('OkPo 5-day Public Challenge')
   await expect(campaigns.first().locator('.campaign-portfolio-current')).toBeHidden()
 
   const thumbnail = campaigns.first().locator('summary > img')
