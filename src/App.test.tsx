@@ -137,6 +137,7 @@ describe('OkPo role workspaces', () => {
     expect(challenge).toHaveTextContent('Upcoming')
     expect(challenge).toHaveTextContent('Posted by OkPo')
     expect(challenge).toHaveTextContent('₱10,000 for 5 days')
+    expect(challenge.querySelector('img')).toHaveAttribute('src', '/assets/campaign-okpo-five-day-public-challenge.jpeg')
     expect(within(challenge).getByLabelText('Content target unlimited')).toBeInTheDocument()
     await user.click(challenge)
     expect(screen.getByText('Upcoming')).toHaveClass('campaign-detail-status-chip')
