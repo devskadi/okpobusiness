@@ -940,7 +940,7 @@ td > strong { color: var(--ink); }
 .campaign-detail-information h1 { margin: 0; max-width: 760px; font-size: clamp(34px, 5vw, 58px); line-height: 1.05; letter-spacing: -.045em; }
 .campaign-detail-rating { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 13px; }
 .campaign-detail-rating span { display: inline-flex; align-items: center; gap: 6px; }
-.campaign-detail-rating svg { width: 15px; height: 15px; stroke-width: 2; }
+.campaign-detail-rating svg { width: 18px; height: 18px; stroke-width: 2; }
 .campaign-detail-brief { margin: 16px 0 0; max-width: 760px; color: var(--muted); line-height: 1.6; }
 .campaign-budget-remaining { margin: 0 30px 30px; padding: 16px 18px; border-radius: 16px; background: var(--canvas); }
 .campaign-detail-page:has(.campaign-detail-action) { padding-bottom: 104px; }
@@ -1004,7 +1004,7 @@ td > strong { color: var(--ink); }
 .campaign-participant-name { width: 100%; min-width: 0; max-width: 100%; overflow: hidden; display: flex; align-items: center; gap: 5px; }
 .campaign-participant-track strong { min-width: 0; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .campaign-participant-name strong { display: block; flex: 0 1 auto; }
-.campaign-participant-name svg { width: 14px; height: 14px; color: #3478f6; fill: #eaf2ff; flex: 0 0 auto; }
+.campaign-participant-name svg { width: 14px; height: 14px; color: var(--yellow); fill: var(--yellow); flex: 0 0 auto; }
 .campaign-participant-track small { overflow: hidden; color: var(--muted); font-size: 10px; display: grid; gap: 2px; }
 .campaign-participant-track small span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .campaign-duration { min-height: 220px; margin: 0 16px; padding: 24px 0 88px; border-top: 1px solid var(--line); display: grid; align-content: start; gap: 18px; }
@@ -1025,13 +1025,18 @@ td > strong { color: var(--ink); }
 .campaign-mission-thumbnail::after { position: absolute; right: 0; bottom: 0; left: 0; height: 55%; background: linear-gradient(transparent, rgba(0,0,0,.72)); content: ""; }
 .campaign-mission-thumbnail img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .campaign-mission-card-copy { min-width: 0; display: flex; flex-direction: column; }
-.campaign-mission-title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; }
+.campaign-mission-title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
 .campaign-mission-title-row h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.campaign-standalone-mission-list h3 { min-width: 0; margin: 0; font-size: 16px; }
-.campaign-standalone-mission-list p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
-.campaign-standalone-mission-list dl { margin-top: auto; padding-top: 15px; display: flex; gap: 18px; }
+.campaign-standalone-mission-list h3 { min-width: 0; margin: 0; font-size: 16px; font-weight: 600; }
+.campaign-standalone-mission-list p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.campaign-standalone-mission-list dl { margin: auto 0 0; padding-top: 15px; display: flex; justify-content: space-between; gap: 18px; }
 .campaign-standalone-mission-list dt { color: var(--muted); font-size: 8px; }
 .campaign-standalone-mission-list dd { margin: 4px 0 0; font-size: 12px; font-weight: 700; }
+.campaign-mission-submission-stat { display: flex; align-items: center; gap: 6px; }
+.campaign-mission-submission-icon { display: flex; align-items: center; color: var(--muted); }
+.campaign-mission-submission-stat dd { margin: 0; font-size: 12px; }
+.campaign-mission-prize-chip { align-self: flex-start; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.campaign-mission-prize-chip dd { margin: 0; }
 .campaign-mission-drawer-backdrop { position: fixed; z-index: 80; inset: 0; background: rgba(20,20,16,.34); backdrop-filter: blur(8px); }
 .campaign-mission-drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(420px, 100%); padding: 28px; background: #fff; box-shadow: -18px 0 50px rgba(20,20,16,.18); }
 .campaign-mission-drawer header { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
@@ -1740,7 +1745,7 @@ td > strong { color: var(--ink); }
   .campaign-detail-information h1 { max-width: none; font-size: 29px; line-height: 1.08; text-align: center; }
   .campaign-detail-rating { margin-top: 12px; justify-content: center; gap: 7px 10px; font-size: 12px; font-weight: 600; text-align: center; }
   .campaign-detail-rating span:not(:last-child)::after { margin-left: 4px; color: var(--muted); content: "·"; }
-  .campaign-detail-rating svg { width: 14px; height: 14px; }
+  .campaign-detail-rating svg { width: 18px; height: 18px; }
   .campaign-detail-brief { margin-top: 12px; font-size: 12px; text-align: center; }
   .campaign-budget-remaining { margin: 0 15px 18px; padding: 13px 14px; border-radius: 12px; }
   .campaign-detail-page:has(.campaign-detail-action) { padding-bottom: 104px; }
@@ -1758,9 +1763,9 @@ td > strong { color: var(--ink); }
   .campaign-standalone-missions { padding: 0; }
   .campaign-standalone-missions h2 { font-size: 24px; font-weight: 600; }
   .campaign-standalone-missions header p { font-size: 10px; }
-  .campaign-standalone-mission-list { padding-inline: 10px; }
+  .campaign-standalone-mission-list { padding-inline: 0; }
   .campaign-standalone-mission-list > article { gap: 10px; padding: 13px; }
-  .campaign-standalone-mission-list dl { gap: 14px; }
+  .campaign-standalone-mission-list dl { flex-direction: row; justify-content: space-between; gap: 8px; padding-top: 10px; }
   .campaign-mission-drawer { top: auto; right: 0; bottom: 0; width: 100%; max-height: 72vh; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; }
   .campaign-participants h2 { font-size: 24px; font-weight: 600; }
   .campaign-participants > header div { display: flex; }
@@ -1787,7 +1792,7 @@ td > strong { color: var(--ink); }
   .campaign-submission-card > summary p { font-size: 14px; font-weight: 500; }
   .campaign-submission-summary p { font-size: 14px; font-weight: 500; }
   .campaign-submission-card > summary p strong { font-weight: 500; }
-  .campaign-submission-summary p strong { font-weight: 500; }
+  .campaign-submission-summary p strong { font-weight: 600; }
   .campaign-submission-card > summary p span { font-weight: 400; }
   .campaign-submission-summary p span { font-weight: 400; }
   .campaign-submission-card > summary small { color: var(--muted); font-size: 12px; font-weight: 400; }

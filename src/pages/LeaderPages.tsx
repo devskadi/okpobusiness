@@ -18,7 +18,7 @@ import {
 import { madridPromotions } from '../madridPromotions'
 import { madridCampaigns } from '../madridCampaigns'
 import type { Community, CommunityCampaign, CommunityClaim } from '../types'
-import { BrandCampaignDetail } from './BrandPages'
+import { BrandCampaignDetail, TikTokMark } from './BrandPages'
 
 function useLeaderContext() {
   const app = useApp()
@@ -224,8 +224,8 @@ export function LeaderOpportunityDetail() {
           const metrics = getCommunityCampaignMetrics(state, mission.id)
           const releasedPool = state.rewards.filter((reward) => reward.communityCampaignId === mission.id && ['Approved', 'Completed'].includes(reward.status)).reduce((sum, reward) => sum + reward.amount, 0)
           return <article key={mission.id}>
-            <div className="campaign-mission-card-main"><div className="campaign-mission-thumbnail"><img src={`/assets/tiktok-preview-${String((missionIndex + 3) % 9 + 1).padStart(2, '0')}.png`} alt="" /></div><div className="campaign-mission-card-copy"><div className="campaign-mission-title-row"><h3>{mission.title}</h3><span className="campaign-mission-status">{mission.status}</span><button type="button" aria-label={`Options for ${mission.title}`} onClick={() => setMissionMenuId(mission.id)}><DotsThreeVertical size={22} weight="bold" /></button></div><p>{mission.instructions}</p>
-            <dl><div><dt>Submissions</dt><dd>{metrics.counted}</dd></div><div><dt>Prizes remaining</dt><dd>{formatCurrency(Math.max(0, mission.rewardBudget - releasedPool))}</dd></div></dl></div></div>
+            <div className="campaign-mission-card-main"><div className="campaign-mission-thumbnail"><img src={`/assets/tiktok-preview-${String((missionIndex + 3) % 9 + 1).padStart(2, '0')}.png`} alt="" /></div><div className="campaign-mission-card-copy"><div className="campaign-mission-title-row"><h3>{mission.title}</h3><button type="button" aria-label={`Options for ${mission.title}`} onClick={() => setMissionMenuId(mission.id)}><DotsThreeVertical size={22} weight="bold" /></button></div><p>{mission.instructions}</p>
+            <dl><div className="campaign-mission-submission-stat"><dt className="campaign-mission-submission-icon" aria-label="Submissions"><TikTokMark size={14} /></dt><dd>{metrics.counted}</dd></div><div className="campaign-mission-prize-chip"><dd>{formatCurrency(Math.max(0, mission.rewardBudget - releasedPool))}</dd></div></dl></div></div>
           </article>
         })}
       </div>

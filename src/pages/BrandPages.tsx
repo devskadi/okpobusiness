@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, SealCheck as BadgeCheck, ChartBar as BarChart3, Cube as Boxes, CalendarDots as CalendarClock,
   CalendarBlank as CalendarDays, Check, CheckCircle as CheckCircle2, CaretDown as ChevronDown, CaretLeft as ChevronLeft,
-  CaretRight as ChevronRight, Eye, FileText as FileCheck2, FilmStrip as Film, Flag, Hash, Stack as Layers3,
+  CaretRight as ChevronRight, Eye, FileText as FileCheck2, Flag, Hash, Stack as Layers3,
   CursorClick as MousePointerClick, Package, Percent, Minus, Pencil, Plus, ArrowsClockwise as RefreshCw,
   PaperPlaneTilt as Send, Sparkle as Sparkles, Target, User as UserRound, Users, UsersThree as UsersRound, Wallet as WalletCards,
   Crown,
@@ -39,7 +39,7 @@ function campaignDateFromReference(weeksFromNow: number) {
   return date.toISOString().slice(0, 10)
 }
 
-function TikTokMark({ size = 15 }: { size?: number }) {
+export function TikTokMark({ size = 15 }: { size?: number }) {
   return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03a10.4 10.4 0 0 1-4.2-.97c-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75a7.12 7.12 0 0 1-1.35 3.94A7.35 7.35 0 0 1 9.33 24a7.18 7.18 0 0 1-4.08-1.03 7.4 7.4 0 0 1-3.65-5.72c-.02-.5-.03-1-.01-1.49a7.42 7.42 0 0 1 2.58-4.96 7.2 7.2 0 0 1 6.15-1.74c.02 1.48-.04 2.96-.04 4.44a3.37 3.37 0 0 0-3.02.37 3.08 3.08 0 0 0-1.36 1.75c-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87a3.25 3.25 0 0 0 2.77-1.61c.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.05Z" />
   </svg>
@@ -577,7 +577,7 @@ export function BrandCampaignDetail({
         <strong className="campaign-detail-rating">
           <span><UsersRound aria-hidden="true" />{communityCount} {communityCount === 1 ? 'community' : 'communities'}</span>
           <span><UserRound aria-hidden="true" />{isUpcoming ? 0 : campaignCreators.length} creators</span>
-          <span><Film aria-hidden="true" />{campaign.published} submissions</span>
+          <span><TikTokMark />{campaign.published} submissions</span>
         </strong>
       </div>
       <div className="campaign-budget-remaining">
