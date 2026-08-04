@@ -1,12 +1,15 @@
 import {
-  ArrowLeft, ArrowRight, BadgeCheck, BarChart3, Boxes, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight,
-  Eye, FileCheck2, Film, Flag, Hash, Layers3, MousePointerClick, Package, Percent,
-  Minus, Pencil, Plus, RefreshCw, Send, Sparkles, Target, UserRound, Users, UsersRound, WalletCards,
-} from 'lucide-react'
+  ArrowLeft, ArrowRight, SealCheck as BadgeCheck, ChartBar as BarChart3, Cube as Boxes, CalendarDots as CalendarClock,
+  CalendarBlank as CalendarDays, Check, CheckCircle as CheckCircle2, CaretDown as ChevronDown, CaretLeft as ChevronLeft,
+  CaretRight as ChevronRight, Eye, FileText as FileCheck2, FilmStrip as Film, Flag, Hash, Stack as Layers3,
+  CursorClick as MousePointerClick, Package, Percent, Minus, Pencil, Plus, ArrowsClockwise as RefreshCw,
+  PaperPlaneTilt as Send, Sparkle as Sparkles, Target, User as UserRound, Users, UsersThree as UsersRound, Wallet as WalletCards,
+  Crown,
+} from '@phosphor-icons/react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
-  Avatar, Callout, ContentBadge, EmptyState, InfoToast, MetricCard, PageHeader, Panel, ProgressBar,
+  Avatar, Callout, ContentBadge, EmptyState, MetricCard, PageHeader, Panel, ProgressBar,
   SegmentedTabs, StatusBadge,
 } from '../components'
 import { legacyDemoOpportunityIds, madridCampaigns, type MadridCampaign } from '../madridCampaigns'
@@ -203,11 +206,9 @@ const madridGrossPoolValue = (madridFinancialSnapshot.paid + madridFinancialSnap
 const madridLiquidity = (madridFinancialSnapshot.pending + madridFinancialSnapshot.walletBalance) * 1.4
 
 export function BrandDashboard() {
-  const { state } = useApp()
   const [communitiesOpen, setCommunitiesOpen] = useState(false)
   const [selectedCampaign, setSelectedCampaign] = useState<FeaturedCampaign | null>(null)
   const [goalExpanded, setGoalExpanded] = useState(false)
-  const postedOpportunities = state.opportunities.filter((item) => item.status !== 'Draft')
   const grossPoolValue = madridGrossPoolValue
   const liquidity = madridLiquidity
   const liquidityShowcase = useShowcaseLiquidity(liquidity)
@@ -439,7 +440,7 @@ export function BrandOpportunities() {
         viewTransition
       >
         <img src={campaign.src} alt="" />
-        <span className={`campaign-listing-cycle-badge${campaign.status === 'Upcoming' ? ' upcoming' : ''}`}>{campaign.status === 'Upcoming' ? 'Upcoming' : <><RefreshCw size={13} aria-hidden="true" />{ordinal(campaign.currentWeek)} cycle</>}</span>
+        <span className={`campaign-listing-cycle-badge${campaign.status === 'Upcoming' ? ' upcoming' : ''}`}>{campaign.status === 'Upcoming' ? <><CalendarClock size={13} aria-hidden="true" />Upcoming</> : <><RefreshCw size={13} aria-hidden="true" />{ordinal(campaign.currentWeek)} cycle</>}</span>
         <div>
           <header><div><h2 aria-label={campaign.name}>{campaign.name} {campaign.status !== 'Upcoming' ? <span>· {ordinal(campaign.currentWeek)} cycle</span> : null}</h2><span>{campaign.postedBy ? `Posted by ${campaign.postedBy}` : 'Madrid Philippines'}</span></div><strong aria-label={campaign.target ? `Target ${campaign.target}` : 'Content target unlimited'}><Target size={16} aria-hidden="true" /><span className="campaign-listing-target-value">{campaign.target || 'Unlimited'}</span><span className="campaign-listing-target-label">to post</span></strong></header>
           <div className="campaign-listing-pool"><strong><span aria-hidden="true">🤑</span>{formatCurrency(campaign.budget)} <span>for</span> <span className="campaign-listing-duration" aria-label={campaign.durationLabel ?? `${campaign.weeks} weeks`}>{campaign.durationLabel ?? `${campaign.weeks} weeks`}</span></strong></div>
@@ -462,8 +463,31 @@ const campaignCreators = [
   { name: 'Miguel Reyes', handle: '@miguelreyes', avatar: '/assets/user-portrait.png', engagement: 5920 },
 ]
 
-export function BrandCampaignDetail() {
-  const { campaignId } = useParams()
+export function BrandCampaignDetail({
+  campaignId: campaignIdOverride,
+  backTo = '/brand/opportunities',
+  communitiesTo = '/brand/communities',
+  showBack = true,
+  hideMissions = false,
+  readOnlySubmissions = false,
+  showLeaderTabIcons = false,
+  budgetDisplay,
+  standaloneSection,
+  campaignAction,
+}: {
+  campaignId?: string
+  backTo?: string
+  communitiesTo?: string
+  showBack?: boolean
+  hideMissions?: boolean
+  readOnlySubmissions?: boolean
+  showLeaderTabIcons?: boolean
+  budgetDisplay?: { remaining: number; total: number; remainingLabel?: string; totalLabel?: string }
+  standaloneSection?: React.ReactNode
+  campaignAction?: React.ReactNode
+} = {}) {
+  const { campaignId: routeCampaignId } = useParams()
+  const campaignId = campaignIdOverride ?? routeCampaignId
   const campaign = madridCampaigns.find((item) => item.id === campaignId)
   const [tab, setTab] = useState<'submissions' | 'missions' | 'leaderboard'>('submissions')
   const [showAllSubmissions, setShowAllSubmissions] = useState(false)
@@ -507,12 +531,12 @@ export function BrandCampaignDetail() {
     ][index],
   }))
   const communityPlaceholders = [
-    { name: 'Madrid PH', logo: '/assets/community-madrid-ph.png', members: 1269, submissions: 14432, views: 32871932 },
-    { name: 'Madrid HR', logo: '/assets/community-madrid-hr.png', members: 25, submissions: 5515, views: 16975227 },
-    { name: 'Madrid Field', logo: '/assets/community-madrid-field.png', members: 26, submissions: 11, views: 3904 },
+    { name: 'Madrid PH', logo: '/assets/community-madrid-ph-logo.png', members: 1269, submissions: 14432, views: 32871932 },
+    { name: 'Madrid HR', logo: '/assets/community-madrid-hr-logo.png', members: 25, submissions: 5515, views: 16975227 },
+    { name: 'Madrid Field', logo: '/assets/community-madrid-field-logo.png', members: 26, submissions: 11, views: 3904 },
     { name: 'TICP', logo: '/assets/community-ticp.jpeg', members: 85, submissions: 331, views: 137039 },
     { name: 'CEPAT Creators', logo: '/assets/community-cepat-creators.png', members: 3, submissions: 1, views: 732 },
-    { name: "Cloud's VIPs", logo: '/assets/community-clouds-vips.png', members: 16, submissions: 2690, views: 1118416 },
+    { name: "Cloud's VIPs", logo: '/assets/community-clouds-vips-logo.png', members: 16, submissions: 2690, views: 1118416 },
     { name: 'SPM Davao', logo: '/assets/community-spm-davao.png', members: 34, submissions: 434, views: 1437779 },
     { name: 'PETRON Fiesta Gas Canister', logo: '/assets/community-petron-fiesta-gas.png', members: 13, submissions: 146, views: 63659 },
     { name: 'Dropify', logo: '/assets/community-dropify.png', members: 37, submissions: 53, views: 47309 },
@@ -532,7 +556,9 @@ export function BrandCampaignDetail() {
       : communityPlaceholders
   const communityCount = participatingCommunities.length
   const remainingBudget = Math.max(0, campaign.budget - campaign.spent)
-  const remainingBudgetPercentage = campaign.budget ? Math.round(remainingBudget / campaign.budget * 100) : 0
+  const displayRemainingBudget = Math.max(0, budgetDisplay?.remaining ?? remainingBudget)
+  const displayTotalBudget = Math.max(0, budgetDisplay?.total ?? campaign.budget)
+  const remainingBudgetPercentage = displayTotalBudget ? Math.round(displayRemainingBudget / displayTotalBudget * 100) : 0
   const remainingWeeks = campaign.remainingWeeks ?? Math.max(0, campaign.weeks - campaign.currentWeek)
   const lastFundedDate = campaignDateFromReference(0)
   const expectedFinishDate = campaignDateFromReference(remainingWeeks)
@@ -542,7 +568,7 @@ export function BrandCampaignDetail() {
     <section className="campaign-detail-hero">
       <div className="campaign-detail-cover">
         <img src={campaign.src} alt="" />
-        <Link className="campaign-detail-back" to="/brand/opportunities" aria-label="Back to Campaigns"><ArrowLeft size={22} /></Link>
+        {showBack ? <Link className="campaign-detail-back" to={backTo} aria-label="Back to Campaigns"><ArrowLeft size={22} /></Link> : null}
         {isUpcoming ? <span className="campaign-detail-status-chip">Upcoming</span> : null}
       </div>
       <div className="campaign-detail-information">
@@ -556,8 +582,8 @@ export function BrandCampaignDetail() {
       </div>
       <div className="campaign-budget-remaining">
         <header>
-          <div><strong>{formatCurrency(remainingBudget)}</strong><span>Rewards remaining</span></div>
-          <div className="campaign-budget-total"><span>Total prize pool</span><strong>{formatCurrency(campaign.budget)}</strong></div>
+          <div><strong>{formatCurrency(displayRemainingBudget)}</strong><span>{budgetDisplay?.remainingLabel ?? 'Rewards remaining'}</span></div>
+          <div className="campaign-budget-total"><span>{budgetDisplay?.totalLabel ?? 'Total prize pool'}</span><strong>{formatCurrency(displayTotalBudget)}</strong></div>
         </header>
         <div className="campaign-budget-track" role="progressbar" aria-label="Rewards remaining" aria-valuemin={0} aria-valuemax={100} aria-valuenow={remainingBudgetPercentage}>
           <span style={{ width: `${remainingBudgetPercentage}%` }} />
@@ -568,12 +594,17 @@ export function BrandCampaignDetail() {
     <div className="campaign-detail-content">
       <section className="campaign-happening" aria-labelledby="campaign-happening-title">
         <h2 id="campaign-happening-title">What&apos;s Happening</h2>
-        <nav className={`campaign-detail-tabs${isUpcoming ? ' upcoming' : ''}`} aria-label="Campaign sections">
-        {(['submissions', 'missions', 'leaderboard'] as const).filter((item) => !(isUpcoming && item === 'missions')).map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}
+        <nav className={`campaign-detail-tabs${isUpcoming || hideMissions ? ' upcoming' : ''}`} aria-label="Campaign sections">
+        {(['submissions', 'missions', 'leaderboard'] as const).filter((item) => !((isUpcoming || hideMissions) && item === 'missions')).map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{showLeaderTabIcons && item === 'submissions' ? <><TikTokMark /><span>Submissions</span><b>{campaign.published}</b></> : showLeaderTabIcons && item === 'leaderboard' ? <><Crown weight="fill" aria-hidden="true" /><span>Leaderboard</span></> : item}</button>)}
         </nav>
         {tab === 'submissions' && isUpcoming ? <section className="campaign-upcoming-empty" aria-label="Campaign submissions">This is an upcoming campaign, check tomorrow for updates!</section> : null}
         {tab === 'submissions' && !isUpcoming ? <section className="campaign-submission-list" aria-label="Campaign submissions">
-        {(showAllSubmissions ? submissions : submissions.slice(0, 3)).map((submission) => <details className="campaign-submission-card" key={submission.name}>
+        {(showAllSubmissions ? submissions : submissions.slice(0, 3)).map((submission) => readOnlySubmissions ? <article className="campaign-submission-card readonly" key={submission.name}>
+          <div className="campaign-submission-summary">
+            <img className="submission-avatar" src={submission.avatar} alt="" />
+            <div><p><strong>{submission.name}</strong><span> submitted a video</span></p><small>{submission.recency} at {submission.submittedAt}</small></div>
+          </div>
+        </article> : <details className="campaign-submission-card" key={submission.name}>
           <summary>
             <img className="submission-avatar" src={submission.avatar} alt="" />
             <div><p><strong>{submission.name}</strong><span> submitted a video</span></p><small>{submission.recency} at {submission.submittedAt}</small></div>
@@ -596,7 +627,7 @@ export function BrandCampaignDetail() {
           {showAllSubmissions ? 'See less' : 'See all'}
         </button>
         </section> : null}
-        {tab === 'missions' ? <section className="campaign-mission-grid" aria-label="Campaign missions">
+        {tab === 'missions' && !hideMissions ? <section className="campaign-mission-grid" aria-label="Campaign missions">
         {missionCards.map((mission, index) => <article key={mission.id}>
           <img src={tiktokContentPreviews[(index + 2) % tiktokContentPreviews.length]} alt="" />
           <div><span className="eyebrow">MISSION {String(index + 1).padStart(2, '0')}</span><h2>{mission.name}</h2><div className="mission-participants" aria-label="20 participating creators">{campaignCreators.map((creator) => <img key={creator.name} src={creator.avatar} alt="" />)}<span>+15</span></div><dl><div><dt>Views</dt><dd>{formatNumber(mission.views)}</dd></div><div><dt>Engagement</dt><dd>{formatNumber(mission.engagement)}</dd></div></dl></div>
@@ -617,6 +648,7 @@ export function BrandCampaignDetail() {
         </div>
         </section> : null}
       </section>
+      {standaloneSection}
       <section className={`campaign-participants${isUpcoming ? ' upcoming' : ''}`} aria-labelledby="campaign-participants-title">
         <header>
           <h2 id="campaign-participants-title">Who&apos;s Participating</h2>
@@ -641,7 +673,7 @@ export function BrandCampaignDetail() {
         >
           <div className="campaign-participant-slider" style={{ transform: `translateX(-${participantPage * 100}%)` }}>
             {participantPages.map((page, pageIndex) => <div className="campaign-participant-page" aria-hidden={pageIndex !== participantPage} key={pageIndex}>
-              {page.map((community) => <Link to="/brand/communities" tabIndex={pageIndex === participantPage ? 0 : -1} key={community.name}>
+              {page.map((community) => <Link to={communitiesTo} tabIndex={pageIndex === participantPage ? 0 : -1} key={community.name}>
                 <img src={community.logo} alt="" />
                 <div className="campaign-participant-name"><strong title={community.name}>{community.name}</strong><BadgeCheck aria-label="Verified community" /></div>
                 <small>
@@ -667,6 +699,7 @@ export function BrandCampaignDetail() {
         </div>
       </section>
     </div>
+    {campaignAction ? <div className="campaign-detail-action">{campaignAction}</div> : null}
   </div>
 }
 

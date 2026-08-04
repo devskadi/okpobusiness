@@ -90,4 +90,8 @@ export const legacyDemoOpportunityIds = new Set([
   'opportunity-daily-defense',
   'opportunity-glass-skin',
   'opportunity-night-routine',
+  'opportunity-tech-recruitment',
+  'opportunity-spm-dubai',
+  'opportunity-pitx-job-fair',
+  'opportunity-kcp-networking',
 ])

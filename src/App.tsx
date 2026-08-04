@@ -7,7 +7,7 @@ import {
 } from './pages/BrandPages'
 import {
   LeaderBudget, LeaderCampaigns, LeaderCampaignWorkspace, LeaderCommunityProfile, LeaderContent,
-  LeaderDashboard, LeaderMembers, LeaderOpportunities, LeaderOpportunityDetail,
+  LeaderDashboard, LeaderMembers, LeaderMissions, LeaderOpportunities, LeaderOpportunityDetail,
 } from './pages/LeaderPages'
 import {
   MemberCampaignDetail, MemberCampaigns, MemberContent, MemberDashboard, MemberProfile, MemberRewards,
@@ -39,11 +39,17 @@ export function App() {
       <Route path="/leader/opportunities" element={<LeaderOpportunities />} />
       <Route path="/leader/opportunities/:opportunityId" element={<LeaderOpportunityDetail />} />
       <Route path="/leader/campaigns" element={<LeaderCampaigns />} />
+      <Route path="/leader/missions" element={<LeaderMissions />} />
+      <Route path="/leader/campaigns/claim/:opportunityId" element={<LeaderOpportunityDetail />} />
       <Route path="/leader/campaigns/:communityCampaignId" element={<LeaderCampaignWorkspace />} />
       <Route path="/leader/members" element={<LeaderMembers />} />
       <Route path="/leader/content" element={<LeaderContent />} />
       <Route path="/leader/budget" element={<LeaderBudget />} />
       <Route path="/leader/community" element={<LeaderCommunityProfile />} />
+      <Route path="/leader/communities" element={<LeaderCommunityProfile />} />
+      <Route path="/leader/analytics" element={<LeaderContent />} />
+      <Route path="/leader/settings" element={<LeaderCommunityProfile />} />
+      <Route path="/leader/help-support" element={<LeaderCommunityProfile />} />
 
       <Route path="/member" element={<MemberDashboard />} />
       <Route path="/member/campaigns" element={<MemberCampaigns />} />

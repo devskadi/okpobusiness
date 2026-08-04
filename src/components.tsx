@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react'
-import { ArrowUpRight, Check, CircleDashed, Info, Sparkles } from 'lucide-react'
+import type { Icon } from '@phosphor-icons/react'
+import { ArrowUpRight, Check, CircleDashed, Info, Sparkle as Sparkles } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { ContentStatus, OpportunityStatus } from './types'
@@ -26,8 +26,8 @@ export function ProgressBar({ value, tone = 'yellow', label }: { value: number; 
   return <div className="progress-wrap">{label ? <div className="progress-label"><span>{label}</span><strong>{safe}%</strong></div> : null}<div className={`progress progress-${tone}`}><span style={{ width: `${safe}%` }} /></div></div>
 }
 
-export function MetricCard({ label, value, detail, icon: Icon, tone = 'plain', className = '' }: { label: string; value: ReactNode; detail?: ReactNode; icon?: LucideIcon; tone?: 'plain' | 'yellow' | 'black'; className?: string }) {
-  return <article className={`metric-card metric-${tone} ${className}`}><div className="metric-top"><span>{label}</span>{Icon ? <i><Icon size={18} /></i> : null}</div><strong>{value}</strong>{detail ? <small>{detail}</small> : null}</article>
+export function MetricCard({ label, value, detail, icon: MetricIcon, tone = 'plain', className = '' }: { label: string; value: ReactNode; detail?: ReactNode; icon?: Icon; tone?: 'plain' | 'yellow' | 'black'; className?: string }) {
+  return <article className={`metric-card metric-${tone} ${className}`}><div className="metric-top"><span>{label}</span>{MetricIcon ? <i><MetricIcon size={18} /></i> : null}</div><strong>{value}</strong>{detail ? <small>{detail}</small> : null}</article>
 }
 
 export function PageHeader({ eyebrow, title, titleAccessory, description, actions }: { eyebrow?: string; title: string; titleAccessory?: ReactNode; description?: string; actions?: ReactNode }) {
@@ -38,8 +38,8 @@ export function Panel({ title, description, action, children, className = '' }: 
   return <section className={`panel ${className}`}>{title || action ? <header className="panel-header"><div>{title ? <h2>{title}</h2> : null}{description ? <p>{description}</p> : null}</div>{action}</header> : null}{children}</section>
 }
 
-export function EmptyState({ icon: Icon = CircleDashed, title, description, action }: { icon?: LucideIcon; title: string; description: string; action?: ReactNode }) {
-  return <div className="empty-state"><span><Icon size={24} /></span><h3>{title}</h3><p>{description}</p>{action}</div>
+export function EmptyState({ icon: EmptyIcon = CircleDashed, title, description, action }: { icon?: Icon; title: string; description: string; action?: ReactNode }) {
+  return <div className="empty-state"><span><EmptyIcon size={24} /></span><h3>{title}</h3><p>{description}</p>{action}</div>
 }
 
 export function CheckRow({ checked, children, onClick }: { checked: boolean; children: ReactNode; onClick?: () => void }) {

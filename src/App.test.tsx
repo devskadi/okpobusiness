@@ -132,6 +132,7 @@ describe('OkPo role workspaces', () => {
     const portfolio = screen.getByLabelText('Madrid Philippines campaigns')
     const challenge = within(portfolio).getByRole('heading', { name: 'OkPo 5-day Public Challenge' }).closest('a')!
     expect(challenge).toHaveTextContent('Upcoming')
+    expect(challenge.querySelector('.campaign-listing-cycle-badge svg')).toBeInTheDocument()
     expect(challenge).toHaveTextContent('Posted by OkPo')
     expect(challenge).toHaveTextContent('₱10,000 for 5 days')
     expect(challenge.querySelector('img')).toHaveAttribute('src', '/assets/campaign-okpo-five-day-public-challenge.png')
@@ -269,6 +270,6 @@ describe('OkPo role workspaces', () => {
     renderRoute('/brand')
     await user.click(screen.getByRole('button', { name: /Viewing as Brand Representative/i }))
     await user.click(screen.getByRole('button', { name: /Community Manager SkinTok PH/i }))
-    expect(await screen.findByRole('heading', { name: /Good morning, Mara/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Good morning, Ian/i })).toBeInTheDocument()
   })
 })

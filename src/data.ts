@@ -116,13 +116,13 @@ export const opportunities: CampaignOpportunity[] = [
     createdAt: 'Jun 18, 2026', postedAt: 'Jun 20, 2026', secondaryViews: 2840000, secondaryEngagement: 218400,
   },
   {
-    id: 'opportunity-barrier-reset', name: 'Barrier Reset Week', productId: 'product-barrier-cream', platform: 'TikTok + Instagram',
+    id: 'opportunity-barrier-reset', name: 'Internship Cohort 3', productId: 'product-barrier-cream', platform: 'TikTok + Instagram',
     objective: 'Published content volume', preparationDays: 10, liveDays: 30,
     preparationStart: '2026-09-01', preparationEnd: '2026-09-10', liveStart: '2026-09-11', liveEnd: '2026-10-10',
     requiredContent: 120, totalBudget: 120000,
-    priorityMessages: ['A simple moisturizer for barrier-first routines', 'Comfortable morning and evening use'],
-    contentDirection: 'Create a practical barrier-reset diary grounded in your actual routine. Do not make medical claims.',
-    hashtags: ['#BarrierResetWeek', '#Dermorepubliq'], mentions: ['@dermorepubliq'], status: 'Open',
+    priorityMessages: ['Paid learning opportunities', 'Clear steps for student applicants'],
+    contentDirection: 'Invite students to Madrid Philippines’ third internship cohort with approachable details about the experience and how to apply.',
+    hashtags: ['#MadridInternship', '#InternshipCohort3'], mentions: ['@madridphilippines'], status: 'Open',
     createdAt: 'Jul 18, 2026', postedAt: 'Jul 20, 2026', secondaryViews: 0, secondaryEngagement: 0,
   },
   {
@@ -146,13 +146,33 @@ export const opportunities: CampaignOpportunity[] = [
     createdAt: 'Mar 12, 2026', postedAt: 'Mar 14, 2026', secondaryViews: 910000, secondaryEngagement: 74400,
   },
   {
-    id: 'opportunity-night-routine', name: 'Night Routine Notes', productId: 'product-barrier-cream', platform: 'Instagram Reels',
-    objective: 'Published content volume', preparationDays: 14, liveDays: 30,
+    id: 'opportunity-night-routine', name: 'OkPo 5-day Public Challenge', productId: 'product-barrier-cream', platform: 'TikTok',
+    objective: 'Challenge participation', preparationDays: 3, liveDays: 5,
     preparationStart: '2026-10-01', preparationEnd: '2026-10-14', liveStart: '2026-10-15', liveEnd: '2026-11-13',
-    requiredContent: 150, totalBudget: 135000,
-    priorityMessages: ['Wind down with a simple routine'], contentDirection: 'Show a calm, useful evening routine.',
-    hashtags: ['#NightRoutineNotes'], mentions: ['@dermorepubliq'], status: 'Draft', createdAt: 'Today',
+    requiredContent: 100, totalBudget: 10000,
+    priorityMessages: ['Complete one daily content challenge', 'Share your creativity with the community'], contentDirection: 'Join five days of fun creator missions and publish one challenge entry each day.',
+    hashtags: ['#OkPo5DayChallenge'], mentions: ['@okpo'], status: 'Open', createdAt: 'Today', postedAt: 'Today',
     secondaryViews: 0, secondaryEngagement: 0,
+  },
+  {
+    id: 'opportunity-tech-recruitment', name: 'Tech Recruitment', productId: 'product-sunscreen', platform: 'TikTok',
+    objective: 'Qualified applicant reach', preparationDays: 7, liveDays: 91, preparationStart: '2026-08-08', preparationEnd: '2026-08-14', liveStart: '2026-08-15', liveEnd: '2026-11-13', requiredContent: 90, totalBudget: 150000,
+    priorityMessages: ['Open technology roles', 'Simple application steps'], contentDirection: 'Create practical recruitment content that highlights available technology roles and gives candidates a clear next step.', hashtags: ['#MadridTechCareers'], mentions: ['@madridphilippines'], status: 'Open', createdAt: 'Jul 25, 2026', postedAt: 'Jul 28, 2026', secondaryViews: 0, secondaryEngagement: 0,
+  },
+  {
+    id: 'opportunity-spm-dubai', name: 'SPM Dubai Hiring', productId: 'product-niacinamide', platform: 'TikTok + Facebook',
+    objective: 'Overseas applicant reach', preparationDays: 10, liveDays: 182, preparationStart: '2026-08-10', preparationEnd: '2026-08-19', liveStart: '2026-08-20', liveEnd: '2027-02-17', requiredContent: 180, totalBudget: 300000,
+    priorityMessages: ['Dubai-based opportunities', 'Role and relocation requirements'], contentDirection: 'Reach qualified call center candidates with clear role, location, requirements, and application information.', hashtags: ['#SPMDubaiHiring'], mentions: ['@madridphilippines'], status: 'Open', createdAt: 'Jul 27, 2026', postedAt: 'Jul 29, 2026', secondaryViews: 0, secondaryEngagement: 0,
+  },
+  {
+    id: 'opportunity-pitx-job-fair', name: 'PITX Job Fair', productId: 'product-sunscreen', platform: 'TikTok + Facebook',
+    objective: 'Event registrations', preparationDays: 14, liveDays: 365, preparationStart: '2026-08-12', preparationEnd: '2026-08-25', liveStart: '2026-08-26', liveEnd: '2027-08-25', requiredContent: 360, totalBudget: 600000,
+    priorityMessages: ['Onsite hiring at PITX', 'Bring the required application documents'], contentDirection: 'Drive awareness and registrations for the PITX onsite job fair with practical event and application guidance.', hashtags: ['#PITXJobFair'], mentions: ['@madridphilippines'], status: 'Open', createdAt: 'Jul 28, 2026', postedAt: 'Jul 30, 2026', secondaryViews: 0, secondaryEngagement: 0,
+  },
+  {
+    id: 'opportunity-kcp-networking', name: 'KCP Networking', productId: 'product-barrier-cream', platform: 'Facebook + TikTok',
+    objective: 'Community registrations', preparationDays: 7, liveDays: 60, preparationStart: '2026-08-15', preparationEnd: '2026-08-21', liveStart: '2026-08-22', liveEnd: '2026-10-20', requiredContent: 120, totalBudget: 180000,
+    priorityMessages: ['Meet local professionals', 'Build meaningful business connections'], contentDirection: 'Invite entrepreneurs and professionals to join KCP networking sessions and explain what attendees can expect.', hashtags: ['#KCPNetworking'], mentions: ['@madridphilippines'], status: 'Open', createdAt: 'Jul 29, 2026', postedAt: 'Aug 1, 2026', secondaryViews: 0, secondaryEngagement: 0,
   },
 ]
 
@@ -257,7 +277,7 @@ export const rewards: MemberReward[] = assignments.map((assignment) => {
 })
 
 export const initialState: AppState = {
-  version: 3,
+  version: 5,
   activeRole: 'brand',
   activeLeaderId: 'leader-mara',
   activeMemberId: 'member-maya',

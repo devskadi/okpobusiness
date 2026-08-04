@@ -1,9 +1,11 @@
 import {
-  ArrowLeft, ArrowRight, BadgeCheck, BarChart3, Check, CheckCircle2, CircleDollarSign,
-  Layers3, Library, LockKeyhole, Plus, ShieldCheck, Target, UserCheck, UserPlus,
-  Users, WalletCards,
-} from 'lucide-react'
-import { useState } from 'react'
+  ArrowLeft, ArrowRight, SealCheck as BadgeCheck, CalendarBlank, ChartBar as BarChart3, Check, CheckCircle as CheckCircle2,
+  CurrencyCircleDollar as CircleDollarSign, Stack as Layers3, Books as Library, LockKey as LockKeyhole,
+  DotsThreeVertical, Info, Medal, Plus, ShieldCheck, Sparkle, Target, TiktokLogo, Trophy, UserCheck, UserPlus, Users, UsersThree,
+  Wallet as WalletCards, Storefront, Heart, X,
+} from '@phosphor-icons/react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   Avatar, Callout, CheckRow, ContentBadge, EmptyState, MetricCard, OpportunityCard, PageHeader,
@@ -14,7 +16,9 @@ import {
   getOpportunityMetrics, useApp,
 } from '../store'
 import { madridPromotions } from '../madridPromotions'
+import { madridCampaigns } from '../madridCampaigns'
 import type { Community, CommunityCampaign, CommunityClaim } from '../types'
+import { BrandCampaignDetail } from './BrandPages'
 
 function useLeaderContext() {
   const app = useApp()
@@ -35,18 +39,125 @@ function claimRemaining(state: ReturnType<typeof useApp>['state'], claim: Commun
   }
 }
 
+function campaignDurationLabel(start: string, end: string) {
+  const durationDays = Math.max(1, Math.round((Date.parse(end) - Date.parse(start)) / 86_400_000) + 1)
+  const months = Math.max(1, Math.ceil(durationDays / 30))
+  return `${months} ${months === 1 ? 'month' : 'months'}`
+}
+
+const dashboardCampaigns = [
+  { id: 'madrid-tech-recruitment', title: 'Tech Recruitment', image: '/assets/campaign-tech-recruitment.png', pool: 150000, deadline: '13 weeks', creators: 62, participation: 69 },
+  { id: 'madrid-internship-cohort-3', title: 'Internship Cohort 3', image: '/assets/campaign-internship-cohort-3.png', pool: 150000, deadline: '8 weeks left', creators: 48, participation: 53 },
+  { id: 'madrid-spm-dubai-hiring', title: 'SPM Dubai Hiring', image: '/assets/campaign-spm-dubai-hiring.png', pool: 300000, deadline: '40 weeks left', creators: 31, participation: 42 },
+  { id: 'madrid-pitx-job-fair', title: 'PITX Job Fair', image: '/assets/campaign-pitx-job-fair-new.png', pool: 600000, deadline: '40 weeks left', creators: 74, participation: 81 },
+] as const
+
+const dashboardCreators = {
+  angel: { name: 'angelmechure', community: 'Madrid HR', avatar: '/assets/madrid-performer-1.jpeg' },
+  loida: { name: 'Loida Erguiza', community: 'Madrid PH', avatar: '/assets/madrid-performer-2.jpeg' },
+  ian: { name: 'Ian Madrid', community: 'Madrid Field', avatar: '/assets/user-portrait.png' },
+  roseann: { name: 'Roseann Sta. Agata', community: "Cloud's VIPs", avatar: '/assets/madrid-rider-1.jpeg' },
+  sean: { name: 'seanrnp', community: 'TICP', avatar: '/assets/madrid-rider-2.jpeg' },
+} as const
+
+const dashboardSubmissions = [
+  { creator: dashboardCreators.angel, thumbnail: '/assets/tiktok-preview-01.png', campaign: 'Tech Recruitment', time: '2 min ago' },
+  { creator: dashboardCreators.loida, thumbnail: '/assets/tiktok-preview-03.png', campaign: 'Internship Cohort 3', time: '8 min ago' },
+  { creator: dashboardCreators.roseann, thumbnail: '/assets/tiktok-preview-06.png', campaign: 'SPM Dubai Hiring', time: '21 min ago' },
+  { creator: dashboardCreators.sean, thumbnail: '/assets/tiktok-preview-08.png', campaign: 'PITX Job Fair', time: '43 min ago' },
+] as const
+
+const dashboardLeaderboard = [
+  { creator: dashboardCreators.angel, submissions: 38, earnings: 28400 },
+  { creator: dashboardCreators.loida, submissions: 34, earnings: 24900 },
+  { creator: dashboardCreators.roseann, submissions: 29, earnings: 22100 },
+  { creator: dashboardCreators.sean, submissions: 25, earnings: 19600 },
+  { creator: dashboardCreators.ian, submissions: 21, earnings: 17200 },
+] as const
+
+const dashboardRewards = [
+  { creator: dashboardCreators.angel, campaign: dashboardCampaigns[0], amount: 4800, time: '12 min ago' },
+  { creator: dashboardCreators.loida, campaign: dashboardCampaigns[1], amount: 3500, time: '1 hr ago' },
+  { creator: dashboardCreators.roseann, campaign: dashboardCampaigns[2], amount: 6200, time: 'Yesterday' },
+] as const
+
+const dashboardNewMembers = [
+  dashboardCreators.ian,
+  dashboardCreators.sean,
+  dashboardCreators.angel,
+  dashboardCreators.loida,
+  dashboardCreators.roseann,
+] as const
+
 export function LeaderDashboard() {
-  const { state, community, claims, campaigns, contents } = useLeaderContext()
-  const assignedQuota = claims.reduce((sum, item) => sum + item.contentQuota, 0)
-  const counted = contents.filter((item) => item.status === 'Counted').length
-  const communityEarnings = madridPromotions.slice(0, 4).reduce((sum, promotion) => sum + promotion.earnings, 0)
-  const open = state.opportunities.filter((item) => ['Open', 'Partially Claimed'].includes(item.status) && !claims.some((claim) => claim.opportunityId === item.id))
-  return <div className="page-stack">
-    <PageHeader eyebrow="COMMUNITY MANAGER" title={`Good morning, ${community.leaderName.split(' ')[0]}.`} description={`Turn ${community.verifiedSize} verified creators into accountable campaign delivery.`} actions={<Link to="/leader/opportunities" className="button button-primary"><Library size={16} />Browse campaigns</Link>} />
-    <section className="leader-identity-banner"><Avatar initials={community.initials} size="lg" tone="mint" /><div><span className="eyebrow">REGISTERED COMMUNITY</span><h2>{community.name}</h2><p>{community.location} · {community.leaderType} Community Manager</p></div><div className="verified-size"><BadgeCheck size={20} /><span><strong>{community.verifiedSize}</strong>verified creators</span></div></section>
-    <section className="metrics-grid metrics-grid-three"><MetricCard label="Assigned quota" value={assignedQuota} detail={`${claims.length} brand allocations`} icon={Target} /><MetricCard label="Counted content" value={counted} detail={`${assignedQuota ? Math.round(counted / assignedQuota * 100) : 0}% community fulfillment`} icon={CheckCircle2} tone="yellow" /><MetricCard label="Total community earnings" value={formatCurrency(communityEarnings)} detail="across active promotions" icon={CircleDollarSign} /></section>
-    <div className="two-column-layout wide-left"><Panel title="My promotions" description="Live Madrid Philippines promotions managed by your community." action={<Link to="/leader/campaigns" className="text-link">Manage all</Link>}><div className="leader-promotion-list">{madridPromotions.slice(0, 4).map((promotion) => <article key={promotion.id} className="leader-promotion-row"><img src={promotion.src} alt="" /><div><strong>{promotion.name}</strong><small>{promotion.manager} · {formatNumber(promotion.views)} views</small></div><b>{formatCurrency(promotion.earnings)}</b></article>)}</div></Panel><Panel title="Open campaigns" description="Claim with your verified community."><div className="mini-opportunity-list">{open.slice(0, 3).map((opportunity) => { const preview = calculateAllocation(state, opportunity.id, community.id); return <Link key={opportunity.id} to={`/leader/opportunities/${opportunity.id}`}><div><span>{opportunity.platform}</span><strong>{opportunity.name}</strong><small>{preview.contentQuota} contents · {formatCurrency(preview.budgetAllocation)}</small></div><ArrowRight size={16} /></Link> })}{open.length === 0 ? <EmptyState title="No open campaigns" description="New brand campaigns will appear here." /> : null}</div></Panel></div>
-    <Panel title="Community delivery pulse"><div className="delivery-pulse">{campaigns.filter((item) => item.status !== 'Completed').map((campaign) => { const metrics = getCommunityCampaignMetrics(state, campaign.id); return <div key={campaign.id}><div><strong>{campaign.title}</strong><span>{metrics.counted}/{campaign.contentQuota} counted</span></div><ProgressBar value={metrics.completionPercentage} /><small>{metrics.remaining} remaining · deadline {formatDate(campaign.deadline)}</small></div> })}</div></Panel>
+  const { state } = useLeaderContext()
+  const communityEarnings = madridPromotions.reduce((sum, promotion) => sum + promotion.earnings, 0)
+  const weeklySubmissions = state.contents.filter((content) => Boolean(content.publishedAt)).length
+  return <div className="page-stack leader-dashboard-page">
+    <header className="leader-dashboard-header">
+      <div><h1>Good morning, Ian.</h1></div>
+    </header>
+
+    <section className="leader-dashboard-summary" aria-labelledby="whats-up-title">
+      <h2 id="whats-up-title">What's Up?</h2>
+      <div className="leader-dashboard-kpis" aria-label="Community performance">
+        <article><span>Community Earnings</span><strong>{formatCurrency(communityEarnings)}</strong><CircleDollarSign className="kpi-corner-icon" size={66} weight="duotone" aria-hidden="true" /></article>
+        <article><span>Submissions This Week</span><strong>{formatNumber(weeklySubmissions)}</strong><TiktokLogo className="kpi-corner-icon kpi-corner-icon--glitch" size={66} weight="duotone" aria-hidden="true" /></article>
+        <article><span>Ongoing Missions</span><strong>{dashboardCampaigns.length}</strong><Trophy className="kpi-corner-icon" size={66} weight="duotone" aria-hidden="true" /></article>
+        <article><span>Members</span><strong>{state.members.length}</strong><UsersThree className="kpi-corner-icon" size={66} weight="duotone" aria-hidden="true" /></article>
+      </div>
+    </section>
+
+    <section className="leader-dashboard-section featured-campaign-section" aria-labelledby="featured-campaigns-title">
+      <header><div><h2 id="featured-campaigns-title">Active Campaigns</h2></div><Link to="/leader/campaigns">View all <ArrowRight size={15} /></Link></header>
+      <div className="featured-campaign-grid">
+        {dashboardCampaigns.map((campaign, index) => <Link className={index === 0 ? 'featured-campaign-card primary' : 'featured-campaign-card'} to="/leader/campaigns" key={campaign.id}>
+          <img src={campaign.image} alt="" />
+          <span className="featured-live-badge"><i />Active</span>
+          <span className="featured-deadline"><CalendarBlank size={13} />{campaign.deadline}</span>
+          <div className="featured-campaign-overlay">
+            <span>Prize pool</span><strong>{formatCurrency(campaign.pool)}</strong>
+            <h3>{campaign.title}</h3>
+            <div><span><UsersThree size={14} />{campaign.creators} creators</span><span>{campaign.participation}% participating</span></div>
+          </div>
+        </Link>)}
+      </div>
+    </section>
+
+    <section className="leader-dashboard-section" aria-labelledby="recent-submissions-title">
+      <header><div><h2 id="recent-submissions-title">Recent Submissions</h2></div><Link to="/leader/analytics">See all <ArrowRight size={15} /></Link></header>
+      <div className="dashboard-submission-grid">
+        {dashboardSubmissions.map((submission) => <article key={submission.creator.name}>
+          <div className="submission-media"><img src={submission.thumbnail} alt="" /><span><TiktokLogo size={14} weight="fill" /></span></div>
+          <div className="submission-creator"><img src={submission.creator.avatar} alt="" /><div><strong>{submission.creator.name}</strong><small>{submission.creator.community}</small></div></div>
+          <p>{submission.campaign}</p><time>{submission.time}</time>
+        </article>)}
+      </div>
+    </section>
+
+    <div className="leader-dashboard-social-grid">
+      <section className="leader-dashboard-section dashboard-leaderboard" aria-labelledby="live-leaderboard-title">
+        <header><div><span className="eyebrow">TOP PERFORMERS</span><h2 id="live-leaderboard-title">Live leaderboard</h2></div><Medal size={22} /></header>
+        <div>{dashboardLeaderboard.map((entry, index) => <article key={entry.creator.name}>
+          <b>{index + 1}</b><img src={entry.creator.avatar} alt="" /><div><strong>{entry.creator.name}</strong><small>{entry.creator.community}</small></div><span><strong>{formatCurrency(entry.earnings)}</strong><small>{entry.submissions} submissions</small></span>
+        </article>)}</div>
+      </section>
+
+      <section className="leader-dashboard-section dashboard-rewards" aria-labelledby="recent-rewards-title">
+        <header><div><span className="eyebrow">SOCIAL PROOF</span><h2 id="recent-rewards-title">Recent rewards earned</h2></div><Sparkle size={22} weight="fill" /></header>
+        <div>{dashboardRewards.map((reward) => <article key={reward.creator.name}>
+          <div className="reward-creator-art"><img src={reward.creator.avatar} alt="" /><Sparkle size={14} weight="fill" /></div>
+          <div><strong>{reward.creator.name}</strong><small>{reward.campaign.title} · {reward.time}</small></div>
+          <img className="reward-campaign-art" src={reward.campaign.image} alt="" />
+          <b>+{formatCurrency(reward.amount)}</b>
+        </article>)}</div>
+      </section>
+    </div>
+
+    <section className="leader-dashboard-section dashboard-new-members" aria-labelledby="new-members-title">
+      <header><div><span className="eyebrow">GROWING COMMUNITY</span><h2 id="new-members-title">New members joining</h2></div><Link to="/leader/communities">View communities <ArrowRight size={15} /></Link></header>
+      <div>{dashboardNewMembers.map((member) => <article key={member.name}><img src={member.avatar} alt="" /><strong>{member.name}</strong><span>{member.community}</span></article>)}</div>
+    </section>
   </div>
 }
 
@@ -62,24 +173,214 @@ export function LeaderOpportunityDetail() {
   const { opportunityId } = useParams()
   const opportunity = state.opportunities.find((item) => item.id === opportunityId)
   const [confirmed, setConfirmed] = useState(false)
+  const [missionModalOpen, setMissionModalOpen] = useState(false)
+  const [missionMenuId, setMissionMenuId] = useState<string | null>(null)
+  const [allocationInfoOpen, setAllocationInfoOpen] = useState(false)
+  useEffect(() => {
+    if (!allocationInfoOpen) return
+    function closeOnEscape(event: KeyboardEvent) { if (event.key === 'Escape') setAllocationInfoOpen(false) }
+    const root = document.documentElement
+    const body = document.body
+    const previousRootOverflow = root.style.overflow
+    const previousBodyOverflow = body.style.overflow
+    const previousOverscrollBehavior = body.style.overscrollBehavior
+    root.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    body.style.overscrollBehavior = 'none'
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      root.style.overflow = previousRootOverflow
+      body.style.overflow = previousBodyOverflow
+      body.style.overscrollBehavior = previousOverscrollBehavior
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [allocationInfoOpen])
   if (!opportunity) return <EmptyState title="Campaign not found" description="Return to the campaign marketplace." />
-  const product = state.products.find((item) => item.id === opportunity.productId)!
   const existingClaim = claims.find((item) => item.opportunityId === opportunity.id)
   const preview = calculateAllocation(state, opportunity.id, community.id)
-  const metrics = getOpportunityMetrics(state, opportunity.id)
+  const opportunityMetrics = getOpportunityMetrics(state, opportunity.id)
   const claimOpportunityId = opportunity.id
   function claim() { dispatch({ type: 'CLAIM_OPPORTUNITY', opportunityId: claimOpportunityId, communityId: community.id }); setConfirmed(true) }
   const currentClaim = existingClaim ?? (confirmed ? { contentQuota: preview.contentQuota, budgetAllocation: preview.budgetAllocation, claimedAt: 'Just now' } : null)
-  return <div className="page-stack"><Link className="back-link" to="/leader/opportunities"><ArrowLeft size={15} />Campaign marketplace</Link><header className="opportunity-detail-hero"><div><span className="eyebrow">{opportunity.platform} CAMPAIGN</span><div className="workspace-title-line"><h1>{opportunity.name}</h1><StatusBadge status={opportunity.status} /></div><p>{product.name}</p></div><div className="hero-commitment"><span>Brand commitment</span><strong>{opportunity.requiredContent}</strong><small>published contents</small></div></header>
-    <div className="detail-layout"><div className="detail-main"><Panel title="Campaign foundation"><div className="detail-grid"><div><span>Objective</span><strong>{opportunity.objective}</strong></div><div><span>Platform</span><strong>{opportunity.platform}</strong></div><div><span>Preparation</span><strong>{formatDate(opportunity.preparationStart)} – {formatDate(opportunity.preparationEnd)}</strong><small>{opportunity.preparationDays} fixed days</small></div><div><span>Live campaign</span><strong>{formatDate(opportunity.liveStart)} – {formatDate(opportunity.liveEnd)}</strong><small>{opportunity.liveDays} fixed days</small></div></div></Panel><Panel title="Product information"><div className="product-brief"><span className="product-mini-art">DR</span><div><h3>{product.name}</h3><p>{product.description}</p><ul className="clean-list">{product.keyBenefits.map((item) => <li key={item}><Check size={14} />{item}</li>)}</ul><small><strong>Use:</strong> {product.usage}</small></div></div></Panel><Panel title="Content direction"><p className="body-copy">{opportunity.contentDirection}</p><h3>Priority messages</h3><ul className="clean-list">{opportunity.priorityMessages.map((item) => <li key={item}><Check size={14} />{item}</li>)}</ul><div className="tag-row">{[...opportunity.hashtags, ...opportunity.mentions].map((item) => <span key={item}>{item}</span>)}</div></Panel></div>
-      <aside className="claim-panel">{currentClaim ? <><span className="success-seal"><Check size={22} /></span><span className="eyebrow">ALLOCATION CONFIRMED</span><h2>{community.name}</h2><p>The system created this allocation immediately. No brand response is required.</p><dl><div><dt>Content quota</dt><dd>{currentClaim.contentQuota}</dd></div><div><dt>Budget allocation</dt><dd>{formatCurrency(currentClaim.budgetAllocation)}</dd></div><div><dt>Campaign dates</dt><dd>Fixed</dd></div><div><dt>Claim status</dt><dd>Confirmed</dd></div></dl><Link className="button button-dark button-block" to="/leader/campaigns"><Plus size={16} />Create promotion</Link></> : <><span className="eyebrow">YOUR AUTOMATIC ALLOCATION</span><h2>{community.name}</h2><div className="verified-formula"><span><strong>{preview.verifiedSize}</strong> verified creators</span><i>÷</i><span><strong>{preview.totalVerifiedSize}</strong> total verified</span></div><dl><div className="claim-highlight"><dt>Content quota</dt><dd>{preview.contentQuota}</dd></div><div className="claim-highlight"><dt>Budget allocation</dt><dd>{formatCurrency(preview.budgetAllocation)}</dd></div><div><dt>Remaining campaign capacity</dt><dd>{preview.remainingContentBeforeClaim}</dd></div><div><dt>Remaining campaign budget</dt><dd>{formatCurrency(preview.remainingBudgetBeforeClaim)}</dd></div></dl><Callout tone="neutral" title="Fixed on confirmation">Dates, quota, and budget cannot be changed or negotiated after claiming.</Callout><button className="button button-primary button-block" onClick={claim} disabled={preview.contentQuota <= 0}><ShieldCheck size={16} />Confirm claim</button><small className="claim-note">Confirmation is immediate. This is not an application.</small></>}</aside>
-    </div><Panel title="Current campaign capacity"><div className="capacity-bar"><div><span>Allocated</span><strong>{metrics.allocated} / {metrics.required}</strong></div><ProgressBar value={Math.round(metrics.allocated / metrics.required * 100)} tone="black" /><p>{Math.max(0, metrics.required - metrics.allocated)} content slots remain available across registered communities.</p></div></Panel></div>
+  const campaignIdByOpportunity: Record<string, string> = {
+    'opportunity-barrier-reset': 'madrid-internship-cohort-3',
+    'opportunity-tech-recruitment': 'madrid-tech-recruitment',
+    'opportunity-spm-dubai': 'madrid-spm-dubai-hiring',
+    'opportunity-pitx-job-fair': 'madrid-pitx-job-fair',
+  }
+  const campaignId = campaignIdByOpportunity[opportunity.id] ?? 'madrid-internship-cohort-3'
+  const displayedCampaign = madridCampaigns.find((campaign) => campaign.id === campaignId)
+  const allocatedBudget = currentClaim?.budgetAllocation ?? preview.budgetAllocation
+  const contentTarget = currentClaim?.contentQuota ?? preview.contentQuota
+  const ongoingMissions = existingClaim
+    ? state.communityCampaigns.filter((campaign) => campaign.claimId === existingClaim.id && campaign.status !== 'Completed').length
+    : 0
+  const selectedMission = missionMenuId ? state.communityCampaigns.find((campaign) => campaign.id === missionMenuId) : null
+  const missionSection = existingClaim ? <>
+    <section className="campaign-standalone-missions" aria-labelledby="campaign-standalone-missions-title">
+      <header><h2 id="campaign-standalone-missions-title">Missions</h2><Link className="campaign-missions-view-all" to="/leader/missions">View all <ArrowRight size={15} /></Link></header>
+      <div className="campaign-standalone-mission-list">
+        {state.communityCampaigns.filter((campaign) => campaign.claimId === existingClaim.id && campaign.status !== 'Completed').slice(0, 3).map((mission, missionIndex) => {
+          const metrics = getCommunityCampaignMetrics(state, mission.id)
+          const releasedPool = state.rewards.filter((reward) => reward.communityCampaignId === mission.id && ['Approved', 'Completed'].includes(reward.status)).reduce((sum, reward) => sum + reward.amount, 0)
+          return <article key={mission.id}>
+            <div className="campaign-mission-card-main"><div className="campaign-mission-thumbnail"><img src={`/assets/tiktok-preview-${String((missionIndex + 3) % 9 + 1).padStart(2, '0')}.png`} alt="" /></div><div className="campaign-mission-card-copy"><div className="campaign-mission-title-row"><h3>{mission.title}</h3><span className="campaign-mission-status">{mission.status}</span><button type="button" aria-label={`Options for ${mission.title}`} onClick={() => setMissionMenuId(mission.id)}><DotsThreeVertical size={22} weight="bold" /></button></div><p>{mission.instructions}</p>
+            <dl><div><dt>Submissions</dt><dd>{metrics.counted}</dd></div><div><dt>Prizes remaining</dt><dd>{formatCurrency(Math.max(0, mission.rewardBudget - releasedPool))}</dd></div></dl></div></div>
+          </article>
+        })}
+      </div>
+    </section>
+    {selectedMission ? createPortal(<div className="campaign-mission-drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMissionMenuId(null) }}>
+      <aside className="campaign-mission-drawer" role="dialog" aria-modal="true" aria-labelledby="campaign-mission-drawer-title">
+        <header><div><span className="campaign-mission-status">{selectedMission.status}</span><h2 id="campaign-mission-drawer-title">{selectedMission.title}</h2></div><button type="button" aria-label="Close mission menu" onClick={() => setMissionMenuId(null)}><X size={22} /></button></header>
+        <p>{selectedMission.instructions}</p>
+        <Link className="button button-primary button-block" to={`/leader/campaigns/${selectedMission.id}`} onClick={() => setMissionMenuId(null)}>Open mission workspace <ArrowRight size={16} /></Link>
+      </aside>
+    </div>, document.body) : null}
+  </> : null
+  const claimRewardsRemaining = existingClaim ? claimRemaining(state, existingClaim).budget : preview.budgetAllocation
+  const budgetDisplay = {
+    remaining: claimRewardsRemaining,
+    total: opportunity.totalBudget,
+    remainingLabel: existingClaim ? 'Rewards remaining' : 'Remaining claimable',
+  }
+  const campaignAction = <>
+    <aside className="campaign-claim-footer" aria-label="Campaign allocation">
+      <div className="campaign-claim-allocation">
+        <div><strong>{currentClaim ? `${ongoingMissions} ongoing missions` : formatCurrency(allocatedBudget)}</strong>{!currentClaim ? <button type="button" aria-label="About this allocation" onClick={() => setAllocationInfoOpen(true)}><Info size={18} /></button> : null}</div>
+        <span>{currentClaim ? `${displayedCampaign?.published ?? opportunityMetrics.published} submissions` : `${contentTarget} content target`}</span>
+      </div>
+      <button type="button" onClick={currentClaim ? () => setMissionModalOpen(true) : claim} disabled={!currentClaim && preview.contentQuota <= 0}>{currentClaim ? 'ADD MISSION' : 'CLAIM'}</button>
+    </aside>
+    {missionModalOpen && existingClaim ? createPortal(<CreateCommunityCampaignModal claim={existingClaim} onClose={() => setMissionModalOpen(false)} />, document.body) : null}
+    {allocationInfoOpen ? createPortal(<div className="allocation-info-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAllocationInfoOpen(false) }}>
+      <section className="allocation-info-modal" role="dialog" aria-modal="true" aria-labelledby="allocation-info-title">
+        <button className="allocation-info-close" type="button" aria-label="Close allocation information" onClick={() => setAllocationInfoOpen(false)}><X size={20} /></button>
+        <h2 id="allocation-info-title">Your community allocation</h2>
+        <p><strong>{formatCurrency(allocatedBudget)}</strong> is the total amount {community.name} can claim for this campaign.</p>
+        <p>This allocation is calculated automatically based on your community size of <strong>{preview.verifiedSize} verified creators</strong>.</p>
+        <button className="allocation-info-done" type="button" onClick={() => setAllocationInfoOpen(false)}>Got it</button>
+      </section>
+    </div>, document.body) : null}
+  </>
+  return <BrandCampaignDetail campaignId={campaignId} backTo="/leader/campaigns" communitiesTo="/leader/communities" showBack={false} hideMissions readOnlySubmissions showLeaderTabIcons budgetDisplay={budgetDisplay} standaloneSection={missionSection} campaignAction={campaignAction} />
+}
+
+export function LeaderMissions() {
+  const { state, community } = useLeaderContext()
+  const missions = state.communityCampaigns.filter((mission) => mission.communityId === community.id)
+  return <div className="page-stack mission-directory-page">
+    <PageHeader eyebrow="COMMUNITY MISSIONS" title="All missions" description={`Every mission currently managed by ${community.name}.`} />
+    <section className="mission-directory-grid" aria-label="All community missions">
+      {missions.map((mission, index) => {
+        const metrics = getCommunityCampaignMetrics(state, mission.id)
+        const releasedPool = state.rewards.filter((reward) => reward.communityCampaignId === mission.id && ['Approved', 'Completed'].includes(reward.status)).reduce((sum, reward) => sum + reward.amount, 0)
+        return <Link className="mission-directory-card" to={`/leader/campaigns/${mission.id}`} key={mission.id}>
+          <div className="mission-directory-thumbnail"><img src={`/assets/tiktok-preview-${String((index + 4) % 9 + 1).padStart(2, '0')}.png`} alt="" /><span>MISSION {String(index + 1).padStart(2, '0')}</span></div>
+          <div><span className="campaign-mission-status">{mission.status}</span><h2>{mission.title}</h2><p>{mission.instructions}</p><dl><div><dt>Submissions</dt><dd>{metrics.counted}</dd></div><div><dt>Prizes remaining</dt><dd>{formatCurrency(Math.max(0, mission.rewardBudget - releasedPool))}</dd></div></dl></div><ArrowRight size={18} />
+        </Link>
+      })}
+    </section>
+  </div>
 }
 
 export function LeaderCampaigns() {
-  const { state, claims, campaigns } = useLeaderContext()
-  const [creatingFor, setCreatingFor] = useState<CommunityClaim | null>(null)
-  return <div className="page-stack"><PageHeader eyebrow="MY PROMOTIONS" title="Turn campaign allocations into promotions" description="Create one or more creator promotions without exceeding the assigned quota or earnings pool." actions={<button className="button button-primary" onClick={() => setCreatingFor(claims.find((claim) => claimRemaining(state, claim).content > 0) ?? null)} disabled={!claims.some((claim) => claimRemaining(state, claim).content > 0)}><Plus size={16} />Create promotion</button>} /><div className="allocation-strip">{claims.map((claim) => { const opportunity = state.opportunities.find((item) => item.id === claim.opportunityId)!; const remaining = claimRemaining(state, claim); return <article key={claim.id}><div><span>{opportunity.name}</span><StatusBadge status={opportunity.status} /></div><dl><div><dt>Assigned</dt><dd>{claim.contentQuota} / {formatCurrency(claim.budgetAllocation)}</dd></div><div><dt>Available to divide</dt><dd>{remaining.content} / {formatCurrency(remaining.budget)}</dd></div></dl>{remaining.content > 0 ? <button className="text-link" onClick={() => setCreatingFor(claim)}><Plus size={14} />Create promotion</button> : <span className="fully-divided"><Check size={14} />Fully divided</span>}</article> })}</div><div className="community-campaign-grid">{campaigns.map((campaign) => { const opportunity = state.opportunities.find((item) => item.id === campaign.opportunityId)!; const metrics = getCommunityCampaignMetrics(state, campaign.id); return <Link to={`/leader/campaigns/${campaign.id}`} className="community-campaign-card" key={campaign.id}><header><span className="campaign-mark">PR</span><StatusBadge status={campaign.status} /></header><span className="overline">{opportunity.name}</span><h2>{campaign.title}</h2><p>{campaign.instructions}</p><div className="campaign-card-metrics"><div><span>Quota</span><strong>{campaign.contentQuota}</strong></div><div><span>Counted</span><strong>{metrics.counted}</strong></div><div><span>Creators</span><strong>{metrics.members}</strong></div><div><span>Earnings</span><strong>{formatCurrency(campaign.rewardBudget)}</strong></div></div><ProgressBar value={metrics.completionPercentage} label="Content completion" /><span className="card-link">Manage promotion <ArrowRight size={15} /></span></Link> })}</div>{creatingFor ? <CreateCommunityCampaignModal claim={creatingFor} onClose={() => setCreatingFor(null)} /> : null}</div>
+  const { state, community, claims } = useLeaderContext()
+  const [filter, setFilter] = useState<'available' | 'claimed'>('available')
+  const [recentPage, setRecentPage] = useState(0)
+  const recentGestureRef = useRef<{ pointerId: number; x: number; y: number; time: number } | null>(null)
+  const recentSwipeUntilRef = useRef(0)
+  const popularTrackRef = useRef<HTMLDivElement>(null)
+  const [popularScroll, setPopularScroll] = useState({ atStart: true, atEnd: false })
+  const artwork: Record<string, string> = {
+    'opportunity-real-skin': '/assets/campaign-tech-recruitment.png',
+    'opportunity-barrier-reset': '/assets/campaign-internship-cohort-3.png',
+    'opportunity-daily-defense': '/assets/campaign-pitx-job-fair-new.png',
+    'opportunity-glass-skin': '/assets/campaign-spm-dubai-hiring.png',
+    'opportunity-night-routine': '/assets/campaign-okpo-five-day-public-challenge.png',
+    'opportunity-tech-recruitment': '/assets/campaign-tech-recruitment.png',
+    'opportunity-spm-dubai': '/assets/campaign-spm-dubai-hiring.png',
+    'opportunity-pitx-job-fair': '/assets/campaign-pitx-job-fair-new.png',
+    'opportunity-kcp-networking': '/assets/campaign-kcp-networking.png',
+  }
+  const available = state.opportunities.filter((opportunity) => ['Open', 'Partially Claimed'].includes(opportunity.status) && !claims.some((claim) => claim.opportunityId === opportunity.id))
+  const claimed = state.opportunities.filter((opportunity) => claims.some((claim) => claim.opportunityId === opportunity.id))
+  const recentPageCount = Math.ceil(available.length / 3)
+  const recentCampaignPages = Array.from({ length: recentPageCount }, (_, page) => available.slice(page * 3, page * 3 + 3))
+  const campaignOverlay: Record<string, { action: string; detail: string }> = {
+    'opportunity-barrier-reset': { action: 'Apply today', detail: 'Join the next internship cohort.' },
+    'opportunity-night-routine': { action: 'Take the challenge', detail: 'Complete five daily creator missions.' },
+    'opportunity-tech-recruitment': { action: 'Find your role', detail: 'Explore open technology careers.' },
+    'opportunity-spm-dubai': { action: 'Work in Dubai', detail: 'See roles and relocation details.' },
+    'opportunity-pitx-job-fair': { action: 'Get hired onsite', detail: 'Register for the PITX job fair.' },
+    'opportunity-kcp-networking': { action: 'Grow your network', detail: 'Meet entrepreneurs and professionals.' },
+  }
+  const campaignBadge: Record<string, string> = {
+    'opportunity-barrier-reset': 'COMMUNITY FAVORITE',
+    'opportunity-night-routine': 'POPULAR TODAY',
+    'opportunity-tech-recruitment': 'POPULAR WITH SMALL COMMUNITIES',
+    'opportunity-spm-dubai': 'LAST CYCLE ONGOING',
+    'opportunity-pitx-job-fair': 'POPULAR TODAY',
+    'opportunity-kcp-networking': 'POPULAR WITH SMALL COMMUNITIES',
+  }
+  function updatePopularScroll() {
+    const track = popularTrackRef.current
+    if (!track) return
+    setPopularScroll({ atStart: track.scrollLeft <= 1, atEnd: track.scrollLeft + track.clientWidth >= track.scrollWidth - 1 })
+  }
+  function scrollPopular(direction: -1 | 1) {
+    const track = popularTrackRef.current
+    const card = track?.querySelector<HTMLElement>('.marketplace-card')
+    if (!track || !card) return
+    const gap = Number.parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0
+    track.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' })
+  }
+  function startRecentSwipe(event: React.PointerEvent<HTMLDivElement>) {
+    if (recentGestureRef.current) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    recentGestureRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: Date.now() }
+  }
+  function finishRecentSwipe(event: React.PointerEvent<HTMLDivElement>) {
+    const start = recentGestureRef.current
+    if (!start || start.pointerId !== event.pointerId) return
+    recentGestureRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    const deltaX = event.clientX - start.x
+    const deltaY = event.clientY - start.y
+    const distance = Math.abs(deltaX)
+    const velocity = distance / Math.max(1, Date.now() - start.time)
+    const isHorizontalSwipe = distance > Math.abs(deltaY) * 1.2 && (distance >= 40 || (distance >= 20 && velocity > .3))
+    if (!isHorizontalSwipe) return
+    recentSwipeUntilRef.current = Date.now() + 400
+    setRecentPage((page) => deltaX < 0 ? Math.min(recentPageCount - 1, page + 1) : Math.max(0, page - 1))
+  }
+
+  return <div className="page-stack campaign-marketplace-page">
+    <section className="marketplace-tab-shell" aria-label="Campaign views">
+      <div className="marketplace-tabs">{([['available', 'Campaigns'], ['claimed', 'Claimed']] as const).map(([id, label]) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)}>{label}</button>)}</div>
+    </section>
+
+    {filter === 'available' ? <>
+      <section className="marketplace-recent" aria-labelledby="recently-viewed-title"><header><h2 id="recently-viewed-title">Recently Viewed</h2><div className="marketplace-recent-controls"><button onClick={() => setRecentPage((page) => Math.max(0, page - 1))} disabled={recentPage === 0} aria-label="Previous recently viewed campaigns"><ArrowLeft size={17} /></button><button onClick={() => setRecentPage((page) => Math.min(recentPageCount - 1, page + 1))} disabled={recentPage >= recentPageCount - 1} aria-label="Next recently viewed campaigns"><ArrowRight size={17} /></button></div></header><div className="marketplace-recent-track" onPointerDown={startRecentSwipe} onPointerUp={finishRecentSwipe} onPointerCancel={() => { recentGestureRef.current = null }} onClickCapture={(event) => { if (Date.now() < recentSwipeUntilRef.current) event.preventDefault() }}><div className="marketplace-recent-slider" style={{ transform: `translateX(-${recentPage * 100}%)` }}>{recentCampaignPages.map((page, pageIndex) => <div className="marketplace-recent-page" key={pageIndex}>{page.map((opportunity) => <Link to={`/leader/campaigns/claim/${opportunity.id}`} key={opportunity.id}><img src={artwork[opportunity.id]} alt="" /><strong>{opportunity.name}</strong><small><b>{formatCurrency(opportunity.totalBudget)}</b><span>for {campaignDurationLabel(opportunity.preparationStart, opportunity.liveEnd)}</span></small></Link>)}</div>)}</div></div></section>
+      <section className="marketplace-results marketplace-popular" aria-labelledby="popular-campaigns-title">
+        <header><h2 id="popular-campaigns-title">Popular Campaigns</h2><div className="marketplace-popular-actions"><div className="marketplace-recent-controls"><button onClick={() => scrollPopular(-1)} disabled={popularScroll.atStart} aria-label="Previous popular campaign"><ArrowLeft size={17} /></button><button onClick={() => scrollPopular(1)} disabled={popularScroll.atEnd || available.length <= 1} aria-label="Next popular campaign"><ArrowRight size={17} /></button></div></div></header>
+        <div className="marketplace-grid marketplace-popular-track" ref={popularTrackRef} onScroll={updatePopularScroll}>{available.map((opportunity) => {
+        const preview = calculateAllocation(state, opportunity.id, community.id)
+        const overlay = campaignOverlay[opportunity.id] ?? { action: 'Join the campaign', detail: 'Create content with your community.' }
+        return <article className="marketplace-card" key={opportunity.id}>
+          <Link className="marketplace-card-art" to={`/leader/campaigns/claim/${opportunity.id}`} aria-label={`View ${opportunity.name}`}><img src={artwork[opportunity.id]} alt="" /><span className="marketplace-favorite"><Heart size={13} weight="fill" /> {campaignBadge[opportunity.id] ?? 'COMMUNITY FAVORITE'}</span><span className="marketplace-campaign-overlay"><small>BIG CAMPAIGN</small><strong>{overlay.action}</strong><span>{overlay.detail}</span></span></Link>
+          <div className="marketplace-card-body"><span className="marketplace-brand">{opportunity.id === 'opportunity-night-routine' ? 'OKPO' : 'MADRID PHILIPPINES'}</span><h3>{opportunity.name}</h3><p>{opportunity.contentDirection}</p><dl><div><dt>Content allocation</dt><dd>{preview.contentQuota} <small>posts</small></dd></div><div><dt>Earnings pool</dt><dd>{formatCurrency(preview.budgetAllocation)}</dd></div></dl></div>
+          <div className="marketplace-mobile-claim">
+            <img src={opportunity.id === 'opportunity-night-routine' ? '/assets/okpo-logo.png' : '/assets/madrid-philippines-logo.png'} alt="" />
+            <div><strong>{opportunity.name}</strong><small>{formatCurrency(preview.budgetAllocation)} allocated prize pool</small></div>
+            <Link to={`/leader/campaigns/claim/${opportunity.id}`}>Claim</Link>
+          </div>
+        </article>
+        })}</div>
+        {available.length === 0 ? <EmptyState icon={Storefront} title="No campaigns available" description="New campaigns will appear here when brands open them for claiming." /> : null}
+      </section>
+    </> : <section className="marketplace-results marketplace-popular marketplace-claimed" aria-labelledby="claimed-campaigns-title"><header><h2 id="claimed-campaigns-title">Claimed Campaigns</h2></header><div className="marketplace-grid marketplace-popular-track">{claimed.map((opportunity) => { const product = state.products.find((item) => item.id === opportunity.productId)!; const existingClaim = claims.find((claim) => claim.opportunityId === opportunity.id)!; return <article className="marketplace-card" key={opportunity.id}><Link className="marketplace-card-art" to={`/leader/campaigns/claim/${opportunity.id}`} aria-label={`View ${opportunity.name}`}><img src={artwork[opportunity.id]} alt="" /><span className="marketplace-status claimed"><Check size={12} /> Claimed</span><span className="marketplace-campaign-overlay"><strong>{opportunity.name}</strong><span>{opportunity.contentDirection}</span></span></Link><div className="marketplace-card-body"><span className="marketplace-brand">DERMOREPUBLIQ · {product.category}</span><h3>{opportunity.name}</h3><p>{opportunity.contentDirection}</p><dl><div><dt>Content allocation</dt><dd>{existingClaim.contentQuota} <small>posts</small></dd></div><div><dt>Earnings pool</dt><dd>{formatCurrency(existingClaim.budgetAllocation)}</dd></div></dl><Link className="marketplace-secondary-button" to={`/leader/campaigns/claim/${opportunity.id}`}>View claimed campaign <ArrowRight size={16} /></Link></div><div className="marketplace-mobile-claim"><img src="/assets/madrid-philippines-logo.png" alt="" /><div><strong>{opportunity.name}</strong><small>{formatCurrency(existingClaim.budgetAllocation)} allocated prize pool</small></div><Link to={`/leader/campaigns/claim/${opportunity.id}`}>View</Link></div></article> })}</div></section>}
+  </div>
 }
 
 function CreateCommunityCampaignModal({ claim, onClose }: { claim: CommunityClaim; onClose: () => void }) {

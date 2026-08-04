@@ -1,7 +1,9 @@
 import {
-  ArrowLeft, ArrowRight, CalendarDays, Check, CheckCircle2, CircleDollarSign, Clock3, ExternalLink,
-  FileCheck2, Link2, Package, Play, Send, Sparkles, Target, Trophy, UserCircle,
-} from 'lucide-react'
+  ArrowLeft, ArrowRight, CalendarBlank as CalendarDays, Check, CheckCircle as CheckCircle2,
+  CurrencyCircleDollar as CircleDollarSign, Clock as Clock3, ArrowSquareOut as ExternalLink,
+  FileText as FileCheck2, Link as Link2, Package, Play, PaperPlaneTilt as Send, Sparkle as Sparkles,
+  Target, Trophy, UserCircle,
+} from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Avatar, Callout, ContentBadge, EmptyState, MetricCard, PageHeader, Panel, ProgressBar, StatusBadge } from '../components'
