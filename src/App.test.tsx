@@ -239,10 +239,11 @@ describe('OkPo role workspaces', () => {
     expect(screen.getByText('Hydration, Your Way')).toBeInTheDocument()
   })
 
-  it('redirects the redundant Brand Communities route into campaign context', async () => {
+  it('opens the Brand community directory with the filtered source roster', async () => {
     renderRoute('/brand/communities')
-    expect(await screen.findByRole('heading', { name: 'Real Skin, Real Routine' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /Communities/ })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('heading', { name: /creator network behind your campaigns/i })).toBeInTheDocument()
+    expect(screen.getByText("Ian's Speed Vloggers")).toBeInTheDocument()
+    expect(screen.queryByText('Future Glow')).not.toBeInTheDocument()
   })
 
   it('renders the Leader marketplace with automatic-allocation messaging', () => {

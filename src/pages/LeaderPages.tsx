@@ -1,7 +1,7 @@
 import {
   ArrowLeft, ArrowRight, SealCheck as BadgeCheck, CalendarBlank, ChartBar as BarChart3, Check, CheckCircle as CheckCircle2,
   CurrencyCircleDollar as CircleDollarSign, Stack as Layers3, Books as Library, LockKey as LockKeyhole,
-  DotsThreeVertical, Info, Medal, Plus, ShieldCheck, Sparkle, Target, TiktokLogo, Trophy, UserCheck, UserPlus, Users, UsersThree,
+  DotsThreeVertical, Fire, Info, Medal, Sparkle, Star, Target, TiktokLogo, Trophy, UserCheck, UserPlus, Users, UsersThree,
   Wallet as WalletCards, Storefront, Heart, X,
 } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
@@ -250,7 +250,7 @@ export function LeaderOpportunityDetail() {
         <div><strong>{currentClaim ? `${ongoingMissions} ongoing missions` : formatCurrency(allocatedBudget)}</strong>{!currentClaim ? <button type="button" aria-label="About this allocation" onClick={() => setAllocationInfoOpen(true)}><Info size={18} /></button> : null}</div>
         <span>{currentClaim ? `${displayedCampaign?.published ?? opportunityMetrics.published} submissions` : `${contentTarget} content target`}</span>
       </div>
-      <button type="button" onClick={currentClaim ? () => setMissionModalOpen(true) : claim} disabled={!currentClaim && preview.contentQuota <= 0}>{currentClaim ? 'ADD MISSION' : 'CLAIM'}</button>
+      <button type="button" onClick={currentClaim ? () => setMissionModalOpen(true) : claim} disabled={!currentClaim && preview.contentQuota <= 0}>{currentClaim ? 'ADD MISSION' : 'Claim campaign'}</button>
     </aside>
     {missionModalOpen && existingClaim ? createPortal(<CreateCommunityCampaignModal claim={existingClaim} onClose={() => setMissionModalOpen(false)} />, document.body) : null}
     {allocationInfoOpen ? createPortal(<div className="allocation-info-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAllocationInfoOpen(false) }}>
@@ -303,8 +303,14 @@ export function LeaderCampaigns() {
     'opportunity-pitx-job-fair': '/assets/campaign-pitx-job-fair-new.png',
     'opportunity-kcp-networking': '/assets/campaign-kcp-networking.png',
   }
+  const featuredArtwork: Record<string, string> = {
+    'opportunity-tech-recruitment': '/assets/campaign-daily-huddle.png',
+  }
   const available = state.opportunities.filter((opportunity) => ['Open', 'Partially Claimed'].includes(opportunity.status) && !claims.some((claim) => claim.opportunityId === opportunity.id))
   const claimed = state.opportunities.filter((opportunity) => claims.some((claim) => claim.opportunityId === opportunity.id))
+  const featuredCampaign = available[0]
+  const featuredPreview = featuredCampaign ? calculateAllocation(state, featuredCampaign.id, community.id) : null
+  const featuredImage = featuredCampaign ? featuredArtwork[featuredCampaign.id] ?? artwork[featuredCampaign.id] : undefined
   const recentPageCount = Math.ceil(available.length / 3)
   const recentCampaignPages = Array.from({ length: recentPageCount }, (_, page) => available.slice(page * 3, page * 3 + 3))
   const campaignOverlay: Record<string, { action: string; detail: string }> = {
@@ -361,9 +367,22 @@ export function LeaderCampaigns() {
     </section>
 
     {filter === 'available' ? <>
-      <section className="marketplace-recent" aria-labelledby="recently-viewed-title"><header><h2 id="recently-viewed-title">Recently Viewed</h2><div className="marketplace-recent-controls"><button onClick={() => setRecentPage((page) => Math.max(0, page - 1))} disabled={recentPage === 0} aria-label="Previous recently viewed campaigns"><ArrowLeft size={17} /></button><button onClick={() => setRecentPage((page) => Math.min(recentPageCount - 1, page + 1))} disabled={recentPage >= recentPageCount - 1} aria-label="Next recently viewed campaigns"><ArrowRight size={17} /></button></div></header><div className="marketplace-recent-track" onPointerDown={startRecentSwipe} onPointerUp={finishRecentSwipe} onPointerCancel={() => { recentGestureRef.current = null }} onClickCapture={(event) => { if (Date.now() < recentSwipeUntilRef.current) event.preventDefault() }}><div className="marketplace-recent-slider" style={{ transform: `translateX(-${recentPage * 100}%)` }}>{recentCampaignPages.map((page, pageIndex) => <div className="marketplace-recent-page" key={pageIndex}>{page.map((opportunity) => <Link to={`/leader/campaigns/claim/${opportunity.id}`} key={opportunity.id}><img src={artwork[opportunity.id]} alt="" /><strong>{opportunity.name}</strong><small><b>{formatCurrency(opportunity.totalBudget)}</b><span>for {campaignDurationLabel(opportunity.preparationStart, opportunity.liveEnd)}</span></small></Link>)}</div>)}</div></div></section>
+      {featuredCampaign ? <section className="marketplace-results marketplace-popular marketplace-featured" aria-labelledby="featured-campaign-title">
+        <header><h2 id="featured-campaign-title">Featured Campaign <Star className="marketplace-section-icon marketplace-section-icon-featured" size={20} weight="fill" aria-hidden="true" /></h2></header>
+        <div className="marketplace-grid marketplace-popular-track">
+          <article className="marketplace-card" key={featuredCampaign.id}>
+            <Link className="marketplace-card-art" to={`/leader/campaigns/claim/${featuredCampaign.id}`} aria-label={`View ${featuredCampaign.name}`}><img src={featuredImage} alt="" fetchPriority="high" /></Link>
+            <div className="marketplace-card-body"><span className="marketplace-brand">{featuredCampaign.id === 'opportunity-night-routine' ? 'OKPO' : 'MADRID PHILIPPINES'}</span><h3>{featuredCampaign.name}</h3><p>{featuredCampaign.contentDirection}</p><dl><div><dt>Content allocation</dt><dd>{featuredPreview?.contentQuota} <small>posts</small></dd></div><div><dt>Earnings pool</dt><dd>{formatCurrency(featuredPreview?.budgetAllocation ?? 0)}</dd></div></dl></div>
+            <div className="marketplace-mobile-claim">
+              <img src={featuredCampaign.id === 'opportunity-night-routine' ? '/assets/okpo-logo.png' : '/assets/madrid-philippines-logo.png'} alt="" />
+              <div><strong>{featuredCampaign.name}</strong><small>{formatCurrency(featuredPreview?.budgetAllocation ?? 0)} allocated prize pool</small></div>
+              <Link to={`/leader/campaigns/claim/${featuredCampaign.id}`}>Claim</Link>
+            </div>
+          </article>
+        </div>
+      </section> : null}
       <section className="marketplace-results marketplace-popular" aria-labelledby="popular-campaigns-title">
-        <header><h2 id="popular-campaigns-title">Popular Campaigns</h2><div className="marketplace-popular-actions"><div className="marketplace-recent-controls"><button onClick={() => scrollPopular(-1)} disabled={popularScroll.atStart} aria-label="Previous popular campaign"><ArrowLeft size={17} /></button><button onClick={() => scrollPopular(1)} disabled={popularScroll.atEnd || available.length <= 1} aria-label="Next popular campaign"><ArrowRight size={17} /></button></div></div></header>
+        <header><h2 id="popular-campaigns-title">Popular Campaigns <Fire className="marketplace-section-icon marketplace-section-icon-popular" size={20} weight="fill" aria-hidden="true" /></h2><div className="marketplace-popular-actions"><div className="marketplace-recent-controls"><button onClick={() => scrollPopular(-1)} disabled={popularScroll.atStart} aria-label="Previous popular campaign"><ArrowLeft size={17} /></button><button onClick={() => scrollPopular(1)} disabled={popularScroll.atEnd || available.length <= 1} aria-label="Next popular campaign"><ArrowRight size={17} /></button></div></div></header>
         <div className="marketplace-grid marketplace-popular-track" ref={popularTrackRef} onScroll={updatePopularScroll}>{available.map((opportunity) => {
         const preview = calculateAllocation(state, opportunity.id, community.id)
         const overlay = campaignOverlay[opportunity.id] ?? { action: 'Join the campaign', detail: 'Create content with your community.' }
@@ -379,6 +398,7 @@ export function LeaderCampaigns() {
         })}</div>
         {available.length === 0 ? <EmptyState icon={Storefront} title="No campaigns available" description="New campaigns will appear here when brands open them for claiming." /> : null}
       </section>
+      <section className="marketplace-recent" aria-labelledby="recently-viewed-title"><header><h2 id="recently-viewed-title">Recently Viewed</h2><div className="marketplace-recent-controls"><button onClick={() => setRecentPage((page) => Math.max(0, page - 1))} disabled={recentPage === 0} aria-label="Previous recently viewed campaigns"><ArrowLeft size={17} /></button><button onClick={() => setRecentPage((page) => Math.min(recentPageCount - 1, page + 1))} disabled={recentPage >= recentPageCount - 1} aria-label="Next recently viewed campaigns"><ArrowRight size={17} /></button></div></header><div className="marketplace-recent-track" onPointerDown={startRecentSwipe} onPointerUp={finishRecentSwipe} onPointerCancel={() => { recentGestureRef.current = null }} onClickCapture={(event) => { if (Date.now() < recentSwipeUntilRef.current) event.preventDefault() }}><div className="marketplace-recent-slider" style={{ transform: `translateX(-${recentPage * 100}%)` }}>{recentCampaignPages.map((page, pageIndex) => <div className="marketplace-recent-page" key={pageIndex}>{page.map((opportunity) => <Link to={`/leader/campaigns/claim/${opportunity.id}`} key={opportunity.id}><img src={artwork[opportunity.id]} alt="" /><strong>{opportunity.name}</strong><small><b>{formatCurrency(opportunity.totalBudget)}</b><span>for {campaignDurationLabel(opportunity.preparationStart, opportunity.liveEnd)}</span></small></Link>)}</div>)}</div></div></section>
     </> : <section className="marketplace-results marketplace-popular marketplace-claimed" aria-labelledby="claimed-campaigns-title"><header><h2 id="claimed-campaigns-title">Claimed Campaigns</h2></header><div className="marketplace-grid marketplace-popular-track">{claimed.map((opportunity) => { const product = state.products.find((item) => item.id === opportunity.productId)!; const existingClaim = claims.find((claim) => claim.opportunityId === opportunity.id)!; return <article className="marketplace-card" key={opportunity.id}><Link className="marketplace-card-art" to={`/leader/campaigns/claim/${opportunity.id}`} aria-label={`View ${opportunity.name}`}><img src={artwork[opportunity.id]} alt="" /><span className="marketplace-status claimed"><Check size={12} /> Claimed</span><span className="marketplace-campaign-overlay"><strong>{opportunity.name}</strong><span>{opportunity.contentDirection}</span></span></Link><div className="marketplace-card-body"><span className="marketplace-brand">DERMOREPUBLIQ · {product.category}</span><h3>{opportunity.name}</h3><p>{opportunity.contentDirection}</p><dl><div><dt>Content allocation</dt><dd>{existingClaim.contentQuota} <small>posts</small></dd></div><div><dt>Earnings pool</dt><dd>{formatCurrency(existingClaim.budgetAllocation)}</dd></div></dl><Link className="marketplace-secondary-button" to={`/leader/campaigns/claim/${opportunity.id}`}>View claimed campaign <ArrowRight size={16} /></Link></div><div className="marketplace-mobile-claim"><img src="/assets/madrid-philippines-logo.png" alt="" /><div><strong>{opportunity.name}</strong><small>{formatCurrency(existingClaim.budgetAllocation)} allocated prize pool</small></div><Link to={`/leader/campaigns/claim/${opportunity.id}`}>View</Link></div></article> })}</div></section>}
   </div>
 }

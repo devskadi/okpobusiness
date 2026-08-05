@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from './AppShell'
 import {
@@ -13,10 +13,16 @@ import {
   MemberCampaignDetail, MemberCampaigns, MemberContent, MemberDashboard, MemberProfile, MemberRewards,
 } from './pages/MemberPages'
 
+const CommunityDirectoryPage = lazy(() => import('./pages/CommunityDirectoryPages'))
+
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => { window.scrollTo({ top: 0, left: 0 }) }, [pathname])
   return null
+}
+
+function CommunityDirectoryRoute({ mode }: { mode: 'brand' | 'leader' }) {
+  return <Suspense fallback={<div className="directory-loading">Loading community directory…</div>}><CommunityDirectoryPage mode={mode} /></Suspense>
 }
 
 export function App() {
@@ -28,7 +34,7 @@ export function App() {
       <Route path="/brand/opportunities/new" element={<BrandNewOpportunity />} />
       <Route path="/brand/opportunities/:opportunityId" element={<BrandOpportunityWorkspace />} />
       <Route path="/brand/campaigns/:campaignId" element={<BrandCampaignDetail />} />
-      <Route path="/brand/communities" element={<Navigate to="/brand/opportunities/opportunity-real-skin?tab=communities" replace />} />
+      <Route path="/brand/communities" element={<CommunityDirectoryRoute mode="brand" />} />
       <Route path="/brand/content" element={<BrandContent />} />
       <Route path="/brand/reports" element={<BrandReports />} />
       <Route path="/brand/notifications" element={<BrandNotifications />} />
@@ -46,7 +52,7 @@ export function App() {
       <Route path="/leader/content" element={<LeaderContent />} />
       <Route path="/leader/budget" element={<LeaderBudget />} />
       <Route path="/leader/community" element={<LeaderCommunityProfile />} />
-      <Route path="/leader/communities" element={<LeaderCommunityProfile />} />
+      <Route path="/leader/communities" element={<CommunityDirectoryRoute mode="leader" />} />
       <Route path="/leader/analytics" element={<LeaderContent />} />
       <Route path="/leader/settings" element={<LeaderCommunityProfile />} />
       <Route path="/leader/help-support" element={<LeaderCommunityProfile />} />
